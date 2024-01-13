@@ -70,6 +70,7 @@ func InitLogger() {
 	mLog.SetLevel(level) //设置最低的Level
 	InitDefaultLogger()
 	Log = mLog
+	Log.Info("日志模块初始化成功")
 }
 
 func InitDefaultLogger() {

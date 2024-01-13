@@ -3,6 +3,7 @@ package configs
 import (
 	"github.com/spf13/viper"
 	"path"
+	"router_service/logger"
 	"runtime"
 )
 
@@ -19,4 +20,5 @@ func InitConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
+	logger.Log.Info("读取配置文件--成功--")
 }

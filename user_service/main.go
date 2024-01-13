@@ -1,1 +1,5 @@
-package user_service
+package main
+
+func main() {
+
+}
