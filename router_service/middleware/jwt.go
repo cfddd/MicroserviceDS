@@ -6,7 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"net/http"
 	"time"
+	exception "utils/status_code"
 )
 
 type Claims struct {
@@ -56,6 +58,36 @@ func ParseToken(token string) (*Claims, error) {
 
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var code int
+		code = exception.SUCCESS
+		// token 可能在query中也可能在postForm中
+		token := c.Query("token")
+		if token == "" {
+			token = c.PostForm("token")
+		}
+		// token不存在
+		if token == "" {
+			code = exception.RequestERROR
+		}
 
+		// 验证token（验证不通过，或者超时）
+		claims, err := ParseToken(token)
+		if err != nil {
+			code = exception.UnAuth
+		} else if time.Now().Unix() > claims.ExpiresAt {
+			code = exception.TokenTimeOut
+		}
+
+		if code != exception.SUCCESS {
+			c.JSON(http.StatusOK, gin.H{
+				"StatusCode": code,
+				"StatusMsg":  exception.GetMsg(code),
+			})
+			c.Abort()
+			return
+		}
+		c.Set("user_id", claims.UserId) // 在得到token之后，解析出user_id供全局使用
+		// 这样就不用在一些request中都接收token然后都再重新解析成user_id（见前后端交互接口）
+		c.Next()
 	}
 }
