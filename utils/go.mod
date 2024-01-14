@@ -3,7 +3,6 @@ module utils
 go 1.20
 
 require (
-	github.com/sirupsen/logrus v1.9.3
 	go.etcd.io/etcd/api/v3 v3.5.11
 	go.etcd.io/etcd/client/v3 v3.5.11
 )

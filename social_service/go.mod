@@ -1,4 +1,4 @@
-module user_service
+module social_service
 
 go 1.20
 
