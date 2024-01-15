@@ -4,7 +4,7 @@
 // 	protoc        v4.25.0
 // source: video_server.proto
 
-package service
+package server
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
