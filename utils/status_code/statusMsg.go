@@ -41,6 +41,5 @@ func GetMsg(code int) string {
 	if ok {
 		return msg
 	}
-
 	return Msg[ERROR]
 }
