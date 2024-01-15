@@ -3,6 +3,7 @@ package model
 import (
 	"sync"
 	"time"
+	"utils/snowFlake"
 )
 
 type Message struct {
@@ -30,8 +31,10 @@ func GetMessageInstance() *MessageModel {
 func (m *MessageModel) PostMessage(message Message) error {
 	message.CreatedAt = time.Now()
 	// 雪花算法生成唯一id
-
-	return DB.Create(&message).Error
+	flake, _ := snowFlake.NewSnowFlake(7, 3)
+	message.Id = flake.NextId()
+	err := DB.Create(&message).Error
+	return err
 }
 
 func (m *MessageModel) GetMessage(uId, tId, preMsgTime int64, messages *[]Message) error {

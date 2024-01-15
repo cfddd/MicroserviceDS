@@ -19,6 +19,14 @@ func (s *SocialService) PostMessage(ctx *context.Context, req *social_pb.PostMes
 		ToUserId: req.ToUserId,
 		Message:  req.Content,
 	}
+	err = model.GetMessageInstance().PostMessage(message)
+	if err != nil {
+		resp.StatusCode = utils.ERROR
+		resp.StatusMsg = utils.GetMsg(utils.ERROR)
+		return resp, nil
+	}
+	resp.StatusCode = utils.SUCCESS
+	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
 
 	return resp, nil
 }
