@@ -1,6 +1,6 @@
 syntax="proto3";
 package pb;
-option go_package = "../;service";  // 此处格式为<生成的文件存放位置;生成文件的包名>
+option go_package = "../;server";  // 此处格式为<生成的文件存放位置;生成文件的包名>
 
 //  protoc -I internal/service/pb --go_out=./internal/service/ --go_opt=paths=source_relative --go-grpc_out=./internal/service/ --go-grpc_opt=paths=source_relative internal/service/pb/*.proto
 //  或者分开使用
@@ -29,13 +29,13 @@ message User {
   // @gotags:json:"name" form:"name" uri:"name"
   string Name = 2;
   // @gotags:json:"douyin_num" form:"douyin_num" uri:"douyin_num"
-  string DouyinNum = 3;  // 抖音号
+  int64 DouyinNum = 3;  // 抖音号
   // @gotags:json:"total_favorite" form:"total_favorite" uri:"total_favorite"
-  string TotalFavorite = 4;  // 用户获赞数量
+  int64 TotalFavorite = 4;  // 用户获赞数量
   // @gotags:json:"favorite_count" form:"favorite_count" uri:"favorite_count"
-  string FavoriteCount = 5;  //用户喜欢总数
+  int64 FavoriteCount = 5;  //用户喜欢总数
   // @gotags:json:"article_count" form:"article_count" uri:"article_count"
-  string ArticleCount = 6;  //用户作品数量
+  int64 ArticleCount = 6;  //用户作品数量
 }
 
 message UserInfoRequest {
