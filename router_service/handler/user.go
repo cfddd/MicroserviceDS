@@ -179,9 +179,9 @@ func BuildUser(user *service.User, count *service.Count, follow *service.FollowI
 		FollowerCount: follow.FollowerCount,
 		IsFollow:      follow.IsFollow,
 
-		Avatar:          user.Avatar,
-		BackgroundImage: user.BackgroundImage,
-		Signature:       user.Signature,
+		//Avatar:          user.Avatar,
+		//BackgroundImage: user.BackgroundImage,
+		//Signature:       user.Signature,
 
 		TotalFavorited: strconv.FormatInt(count.TotalFavorited, 10), // 将int64转换成string
 		WorkCount:      count.WorkCount,

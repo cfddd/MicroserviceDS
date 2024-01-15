@@ -4,7 +4,7 @@
 // 	protoc        v4.25.2
 // source: social_server.proto
 
-package service
+package server
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
