@@ -1,0 +1,20 @@
+server:
+  name: video_service  # 服务名称
+  address: 127.0.0.1:10002  # 服务地址
+
+
+mysql:
+  driver: mysql
+  host: 47.109.59.237
+  port: 3306
+  username: root
+  password: 123456
+  database: douyin
+
+
+etcd:
+  address: 127.0.0.1:2379
+
+redis:
+  address: 127.0.0.1:6379
+  password: 123456

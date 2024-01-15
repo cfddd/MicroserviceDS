@@ -1,6 +1,6 @@
 syntax="proto3";
 package pb;
-option go_package = "../;service";  // 此处格式为<生成的文件存放位置;生成文件的包名>
+option go_package = "../;server";  // 此处格式为<生成的文件存放位置;生成文件的包名>
 
 
 message Video {

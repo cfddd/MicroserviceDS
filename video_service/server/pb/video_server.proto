@@ -1,6 +1,6 @@
 syntax="proto3";
 package pb;
-option go_package = "../;service";  // 此处格式为<生成的文件存放位置;生成文件的包名>
+option go_package = "../;server";  // 此处格式为<生成的文件存放位置;生成文件的包名>
 
 
 message Video {
@@ -29,8 +29,12 @@ message Comment {
   int64 UserId = 2;
   // @gotags:json:"content" form:"content" uri:"content"
   string Content = 3;  // 评论内容
-  // @gotags:json:"create_date" form:"create_date" uri:"create_date"
-  string CreateDate = 4;
+  // @gotags:json:"created_date" form:"created_date" uri:"created_date"
+  string CreatedDate = 4;
+  // @gotags:json:"updated_date" form:"updated_date" uri:"updated_date"
+  string UpdatedDate = 5;
+  // @gotags:json:"deleted_date" form:"deleted_date" uri:"deleted_date"
+  string DeletedDate = 6;
 }
 
 // 视频流
