@@ -5,17 +5,13 @@ type User struct {
 	Id   int64  `json:"id"`
 	Name string `json:"name"`
 	// 社交服务
-	FollowCount   int64 `json:"follow_count"`
-	FollowerCount int64 `json:"follower_count"`
-	IsFollow      bool  `json:"is_follow"`
-	// 用户服务
-	Avatar          string `json:"avatar"`
-	BackgroundImage string `json:"background_image"`
-	Signature       string `json:"signature"`
+	FollowCount   int64 `json:"follow_count"`   //关注人数
+	FollowerCount int64 `json:"follower_count"` //被关注人数
+	IsFollow      bool  `json:"is_follow"`      //是否关注
 	// 视频服务
-	TotalFavorited string `json:"total_favorited"` // 获赞数量
-	WorkCount      int64  `json:"work_count"`      // 作品数量
-	FavoriteCount  int64  `json:"favorite_count"`  // 喜欢数量
+	TotalFavorited int64 `json:"total_favorited"` // 获赞数量
+	ArticleCount   int64 `json:"work_count"`      // 作品数量
+	FavoriteCount  int64 `json:"favorite_count"`  // 喜欢数量
 }
 
 type Comment struct {

@@ -85,11 +85,8 @@ func (*UserService) UserLogin(ctx context.Context, req *server.UserRequest) (res
 
 func RespUser(u *model.User) *server.User {
 	user := server.User{
-		Id:            u.ID,
-		Name:          u.Name,
-		TotalFavorite: u.Total_favorite,
-		FavoriteCount: u.Favorite_count,
-		ArticleCount:  u.Article_count,
+		Id:   u.ID,
+		Name: u.Name,
 	}
 	return &user
 }

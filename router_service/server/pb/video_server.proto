@@ -27,10 +27,16 @@ message Comment {
   int64 Id = 1;
   // @gatags:json:"user_id" form:"user_id" uri:"user_id"
   int64 UserId = 2;
+  // @gotags:json:"video_id" form:"video_id" uri:"video_id"
+  int64 VideoId = 3;
   // @gotags:json:"content" form:"content" uri:"content"
-  string Content = 3;  // 评论内容
-  // @gotags:json:"create_date" form:"create_date" uri:"create_date"
-  string CreateDate = 4;
+  string Content = 4;  // 评论内容
+  // @gotags:json:"created_at" form:"created_at" uri:"created_at"
+  string CreatedAt = 5;
+  // @gotags:json:"updated_at" form:"updated_at" uri:"updated_at"
+  string UpdatedAt = 6;
+  // @gotags:json:"deleted_at" form:"deleted_at" uri:"deleted_at"
+  string DeletedAt = 7;
 }
 
 // 视频流
@@ -160,8 +166,8 @@ message CommentListResponse {
 message Count {
   // @gotags:json:"total_favorited" form:"total_favorited" uri:"total_favorited"
   int64 TotalFavorited = 1;  // 获赞数量
-  // @gotags:json:"work_count" form:"work_count" uri:"work_count"
-  int64 WorkCount = 2;  // 作品数量
+  // @gotags:json:"article_count" form:"article_count" uri:"article_count"
+  int64 ArticleCount = 2;  // 作品数量
   // @gotags:json:"favorite_count" form:"favorite_count" uri:"favorite_count"
   int64 FavoriteCount = 3;  // 喜欢数量
 }
