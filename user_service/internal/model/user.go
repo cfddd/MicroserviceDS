@@ -17,12 +17,9 @@ type COMMON struct {
 
 type User struct {
 	COMMON
-	Name           string `gorm:"unique" json:"name"`      //名字
-	Password       string `gorm:"notnull" json:"password"` //密码
-	Douyin_num     string `json:"douyin_num"`              //抖音号
-	Total_favorite int64  `json:"total_favorite"`          //获赞数量
-	Favorite_count int64  `json:"favorite_count"`          //喜欢总数
-	Article_count  int64  `json:"article_count"`           //作品数量
+	Name       string `gorm:"unique" json:"name"`      //名字
+	Password   string `gorm:"notnull" json:"password"` //密码
+	Douyin_num string `json:"douyin_num"`              //抖音号
 }
 
 type UserModel struct {

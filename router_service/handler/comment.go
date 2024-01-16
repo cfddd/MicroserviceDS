@@ -122,7 +122,7 @@ func BuildComment(comment *service.Comment, userInfo res.User) res.Comment {
 		Id:         comment.Id,
 		User:       userInfo,
 		Content:    comment.Content,
-		CreateDate: comment.CreateDate,
+		CreateDate: comment.CreatedAt,
 	}
 }
 
@@ -134,7 +134,7 @@ func BuildCommentList(comments []*service.Comment, userInfos []res.User) []res.C
 			Id:         comment.Id,
 			User:       userInfos[i],
 			Content:    comment.Content,
-			CreateDate: comment.CreateDate,
+			CreateDate: comment.CreatedAt,
 		})
 	}
 
