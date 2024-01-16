@@ -7,22 +7,9 @@ import (
 	"strings"
 )
 
-// Config 数据结构
-type Config struct {
-	Mysql struct {
-		Host     string
-		Port     string
-		Username string
-		Password string
-		Database string
-	}
-}
-
-// ConfigData 配置数据变量
-var ConfigData *Config
-
 // InitConfig 读取配置文件
 func InitConfig() {
+	// runtime.Caller(0) 用于获取当前源文件的路径，可以根据参数值获取不同调用栈层次的源文件路径。
 	_, filePath, _, _ := runtime.Caller(0)
 
 	currentDir := path.Dir(filePath)
@@ -45,6 +32,5 @@ func DbDnsInit() string {
 	database := viper.GetString("mysql.database")
 	InitConfig()
 	dns := strings.Join([]string{username, ":", password, "@tcp(", host, ":", port, ")/", database, "?charset=utf8&parseTime=True&loc=Local"}, "")
-
 	return dns
 }
