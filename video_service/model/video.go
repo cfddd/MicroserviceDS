@@ -7,7 +7,7 @@ import (
 	video_server "video_service/server"
 )
 
-type common struct {
+type Common struct {
 	ID        uint64         `gorm:"primary_key"` // 主键ID
 	CreatedAt time.Time      // 创建时间
 	UpdatedAt time.Time      // 更新时间
@@ -15,7 +15,7 @@ type common struct {
 }
 
 type Video struct {
-	common
+	Common
 	AuthID        int64  //新加的，1月16日
 	VideoCreator  int64  `gorm:"column:video_creator;type:bigint(20)" json:"video_creator"`
 	PlayUrl       string `gorm:"column:play_url;type:varchar(256)" json:"play_url"`

@@ -25,9 +25,9 @@ rabbitMQ:
   address: localhost:5672
 
 oss:
-  bucketName: microservice-v1
-  endpoint: https://oss-cn-chengdu.aliyuncs.com
-  accessKeyId: 1gvutSKAKY7cwPwwWkHDeQL8kX4iCuOxGvTMg2CT
-  accessKeySecret: emZSDHr6oi2C5eJzlMJMc50DryW415crhzOCLzPQ
+  link: douyin.cfddfc.online
+  bucket: microservice-v1
+  accessKey: 1gvutSKAKY7cwPwwWkHDeQL8kX4iCuOxGvTMg2CT
+  secretKey: emZSDHr6oi2C5eJzlMJMc50DryW415crhzOCLzPQ
 
 

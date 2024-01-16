@@ -1,70 +1,112 @@
-package upload
+package oss7
 
 import (
+	"bytes"
 	"context"
-	"errors"
-	"fmt"
-	"github.com/qiniu/api.v7/v7/auth/qbox"
-	"github.com/qiniu/api.v7/v7/storage"
+	"github.com/qiniu/api.v7/v7/auth"
+	auth2 "github.com/qiniu/go-sdk/v7/auth"
+	"github.com/qiniu/go-sdk/v7/storage"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"mime/multipart"
 	"time"
 	"video_service/logger"
 )
 
+var QiniuClient Qiniu
+
 type Qiniu struct {
-	bucketName      string
-	endPoint        string
-	accessKeyId     string
-	accessKeySecret string
+	accessKey string
+	secretKey string
+	bucket    string
 }
 
-var qiniu *Qiniu
-
-// 创建存储空间
-func ossInit(q *Qiniu) error {
-	q.bucketName = viper.GetString("oss.bucketName")
-	q.endPoint = viper.GetString("oss.endpoint")
-	q.accessKeyId = viper.GetString("oss.accessKeyId")
-	q.accessKeySecret = viper.GetString("oss.accessKeySecret")
-
+func InitBucket() {
+	QiniuClient.bucket = viper.GetString("oss.bucket")
+	QiniuClient.accessKey = viper.GetString("oss.accessKey")
+	QiniuClient.secretKey = viper.GetString("oss.secretKey")
 }
 
-// UploadFile 七牛云上传文件
-func (q *Qiniu) UploadFile(file *multipart.FileHeader) (string, string, error) {
-	putPolicy := storage.PutPolicy{Scope: q.bucketName}
-	mac := qbox.NewMac(q.accessKeyId, q.accessKeySecret)
-	upToken := putPolicy.UploadToken(mac)
-	cfg := qiniuConfig()
-	formUploader := storage.NewFormUploader(cfg)
+// UploadFile 上传文件
+// localFile 本地文件路径，相对当前包路径
+// key 目的文件路径
+func UploadFile(localFile, key string) (err error) {
+	putPolicy := storage.PutPolicy{
+		Scope: QiniuClient.bucket,
+	}
+	mac := auth.New(QiniuClient.accessKey, QiniuClient.secretKey)
+	upToken := putPolicy.UploadToken((*auth2.Credentials)(mac))
+	cfg := storage.Config{}
+	// 空间对应的机房
+	cfg.Region = &storage.ZoneHuadong
+	// 是否使用https域名
+	cfg.UseHTTPS = true
+	// 上传是否使用CDN上传加速
+	cfg.UseCdnDomains = false
+	resumeUploader := storage.NewResumeUploaderV2(&cfg)
 	ret := storage.PutRet{}
-	putExtra := storage.PutExtra{Params: map[string]string{"x:name": "github logo"}}
-
-	f, openError := file.Open()
-	if openError != nil {
-		logger.Log.Error("function file.Open() failed", zap.Any("err", openError.Error()))
-
-		return "", "", errors.New("function file.Open() failed, err:" + openError.Error())
+	putExtra := storage.RputV2Extra{}
+	err = resumeUploader.PutFile(context.Background(), &ret, upToken, key, localFile, &putExtra)
+	if err != nil {
+		logger.Log.Error(err)
+		return
 	}
-	defer f.Close()                                                  // 创建文件 defer 关闭
-	fileKey := fmt.Sprintf("%d%s", time.Now().Unix(), file.Filename) // 文件名格式 自己可以改 建议保证唯一性
-	putErr := formUploader.Put(context.Background(), &ret, upToken, fileKey, f, file.Size, &putExtra)
-	if putErr != nil {
-		logger.Log.Error("function formUploader.Put() failed", zap.Any("err", putErr.Error()))
-		return "", "", errors.New("function formUploader.Put() failed, err:" + putErr.Error())
-	}
-	return global.GVA_CONFIG.Qiniu.ImgPath + "/" + ret.Key, ret.Key, nil
+	logger.Log.Info("上传文件" + localFile + "到七牛云" + key + "成功")
+	return err
 }
 
-// DeleteFile 七牛云删除文件
-func (*Qiniu) DeleteFile(key string) error {
-	mac := qbox.NewMac(global.GVA_CONFIG.Qiniu.AccessKey, global.GVA_CONFIG.Qiniu.SecretKey)
-	cfg := qiniuConfig()
-	bucketManager := storage.NewBucketManager(mac, cfg)
-	if err := bucketManager.Delete(global.GVA_CONFIG.Qiniu.Bucket, key); err != nil {
-		global.GVA_LOG.Error("function bucketManager.Delete() failed", zap.Any("err", err.Error()))
-		return errors.New("function bucketManager.Delete() failed, err:" + err.Error())
+// UploadFileWithByte 上传文件，使用字节数组
+func UploadFileWithByte(key string, localFile []byte) (err error) {
+	putPolicy := storage.PutPolicy{
+		Scope: QiniuClient.bucket,
+	}
+	mac := auth.New(QiniuClient.accessKey, QiniuClient.secretKey)
+	upToken := putPolicy.UploadToken((*auth2.Credentials)(mac))
+	cfg := storage.Config{}
+	// 空间对应的机房
+	cfg.Region = &storage.ZoneHuadong
+	// 是否使用https域名
+	cfg.UseHTTPS = true
+	// 上传是否使用CDN上传加速
+	cfg.UseCdnDomains = false
+	formUploader := storage.NewFormUploader(&cfg)
+	ret := storage.PutRet{}
+	putExtra := storage.PutExtra{
+		Params: map[string]string{
+			"x:name": "github logo",
+		},
+	}
+	dataLen := int64(len(localFile))
+	err = formUploader.Put(context.Background(), &ret, upToken, key, bytes.NewReader(localFile), dataLen, &putExtra)
+	if err != nil {
+		logger.Log.Error(err)
+		return
+	}
+	logger.Log.Info("上传视频文件到七牛云" + key + "成功")
+	return err
+}
+
+func GetFileUrl(key string) string {
+	mac := auth.New(QiniuClient.accessKey, QiniuClient.secretKey)
+	domain := "http://douyin.cfddfc.online"
+	deadline := time.Now().Add(time.Second * 3600).Unix() //1小时有效期
+	privateAccessURL := storage.MakePrivateURL((*auth2.Credentials)(mac), domain, key, deadline)
+	return privateAccessURL
+}
+
+func DeleteFile(key string) error {
+	mac := auth.New(QiniuClient.accessKey, QiniuClient.secretKey)
+	cfg := storage.Config{
+		// 是否使用https域名进行资源管理
+		UseHTTPS: false,
+	}
+	// 指定空间所在的区域，如果不指定将自动探测
+	// 如果没有特殊需求，默认不需要指定
+	//cfg.Region=&storage.ZoneHuabei
+	bucketManager := storage.NewBucketManager((*auth2.Credentials)(mac), &cfg)
+	err := bucketManager.Delete(QiniuClient.bucket, key)
+	if err != nil {
+		logger.Log.Error(err)
+		return err
 	}
 	return nil
+
 }

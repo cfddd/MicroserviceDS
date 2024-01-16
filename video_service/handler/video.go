@@ -6,13 +6,18 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/spf13/viper"
 	"log"
 	"strconv"
 	"sync"
 	"time"
 	"utils/exception"
+	"video_service/logger"
 	"video_service/model"
+	"video_service/pkg/cache"
+	"video_service/pkg/cut"
 	"video_service/pkg/db"
+	"video_service/pkg/oss7"
 	video_server "video_service/server"
 )
 
@@ -117,11 +122,11 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 	// 获取参数,生成地址
 	title := req.Title
 	UUID := uuid.New()
-	videoDir := title + "--" + UUID.String() + ".mp4"
-	pictureDir := title + "--" + UUID.String() + ".jpg"
+	videoDir := "douyin/video/" + title + "--" + UUID.String() + ".mp4"
+	pictureDir := "douyin/cover/" + title + "--" + UUID.String() + ".jpg"
 
-	videoUrl := "http://tiny-tiktok.oss-cn-chengdu.aliyuncs.com/" + videoDir
-	pictureUrl := "http://tiny-tiktok.oss-cn-chengdu.aliyuncs.com/" + pictureDir
+	videoUrl := viper.GetString("oss.link") + videoDir
+	pictureUrl := viper.GetString("oss.link") + pictureDir
 
 	// 等待上传和创建数组库完成
 	var wg sync.WaitGroup
@@ -131,24 +136,24 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 	go func() {
 		defer wg.Done()
 		// 上传视频
-		updataErr = third_party.Upload(videoDir, req.Data)
+		updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
 		// 获取封面,获取第几秒的封面
-		coverByte, _ := cut.Cover(videoUrl, "00:00:03")
+		coverByte, _ := cut.Cover(videoUrl, "1.0")
 		// 上传封面
-		updataErr = third_party.Upload(pictureDir, coverByte)
-		log.Print("上传成功")
+		updataErr = oss7.UploadFileWithByte(pictureDir, coverByte)
+		logger.Log.Info("上传成功")
 	}()
 
 	// 创建数据
 	go func() {
 		defer wg.Done()
 		// 创建video
+		// CreatedAt ? 不让写，会报错
 		video := model.Video{
-			AuthId:   req.UserId,
-			Title:    title,
-			CoverUrl: pictureUrl,
-			PlayUrl:  videoUrl,
-			CreatAt:  time.Now(),
+			VideoCreator: req.UserId,
+			Title:        title,
+			CoverUrl:     pictureUrl,
+			PlayUrl:      videoUrl,
 		}
 		creatErr = model.GetVideoInstance().Create(&video)
 	}()
@@ -160,8 +165,8 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 		go func() {
 			// 存入数据库失败，删除上传
 			if creatErr != nil {
-				_ = third_party.Delete(videoDir)
-				_ = third_party.Delete(pictureDir)
+				_ = oss7.DeleteFile(videoDir)
+				_ = oss7.DeleteFile(pictureDir)
 			}
 			// 上传失败，删除数据库
 			if updataErr != nil {
@@ -177,14 +182,14 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 	}
 
 	// 发布成功，缓存中作品总数 + 1，如果不存在缓存则不做操作
-	exist, err := db.Redis.HExists(db.Ctx, key, strconv.FormatInt(req.UserId, 10)).Result()
+	exist, err := cache.Redis.HExists(cache.Ctx, key, strconv.FormatInt(req.UserId, 10)).Result()
 	if err != nil {
 		return nil, fmt.Errorf("缓存错误：%v", err)
 	}
 
 	if exist {
 		// 字段存在，该记录数量 + 1
-		_, err = db.Redis.HIncrBy(db.Ctx, key, strconv.FormatInt(req.UserId, 10), 1).Result()
+		_, err = cache.Redis.HIncrBy(cache.Ctx, key, strconv.FormatInt(req.UserId, 10), 1).Result()
 		if err != nil {
 			return nil, fmt.Errorf("缓存错误：%v", err)
 		}
@@ -192,7 +197,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 
 	// 发布成功延时双删发布列表
 	workKey := fmt.Sprintf("%s:%s:%s", "user", "work_list", strconv.FormatInt(req.UserId, 10))
-	err = db.Redis.Del(db.Ctx, workKey).Err()
+	err = cache.Redis.Del(cache.Ctx, workKey).Err()
 	if err != nil {
 		return nil, fmt.Errorf("缓存错误：%v", err)
 	}
@@ -201,7 +206,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 			//延时3秒执行
 			time.Sleep(time.Second * 3)
 			//再次删除缓存
-			db.Redis.Del(db.Ctx, workKey)
+			cache.Redis.Del(cache.Ctx, workKey)
 		}()
 	}()
 
