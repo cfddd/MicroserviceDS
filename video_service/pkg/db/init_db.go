@@ -1,4 +1,4 @@
-package init
+package db
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/schema"
 	"log"
 	"time"
-	"video_service/configs"
+	"video_service/config"
 	"video_service/model"
 )
 
@@ -17,8 +17,8 @@ var DB *gorm.DB
 
 // InitDb 初始化数据库
 func InitDb() {
-	configs.InitConfig()
-	dns := configs.DbDnsInit()
+	config.InitConfig()
+	dns := config.DbDnsInit()
 	Database(dns)
 }
 

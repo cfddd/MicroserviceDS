@@ -7,7 +7,7 @@ import (
 	"net"
 	"utils/etcd"
 	"video_service/handler"
-	"video_service/service"
+	"video_service/server"
 )
 
 // AutoRegister etcd自动注册
@@ -35,10 +35,10 @@ func AutoRegister() {
 	var options = []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 128),
 	}
-	server := grpc.NewServer(options...)
-	service.RegisterVideoServiceServer(server, handler.NewVideoService())
+	service := grpc.NewServer(options...)
+	server.RegisterVideoServiceServer(service, handler.NewVideoService())
 
-	err = server.Serve(listener)
+	err = service.Serve(listener)
 	if err != nil {
 		log.Fatal(err)
 	}
