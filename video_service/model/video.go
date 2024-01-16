@@ -2,11 +2,13 @@ package model
 
 import (
 	"gorm.io/gorm"
+	"sync"
 	"time"
+	video_server "video_service/server"
 )
 
 type common struct {
-	ID        uint64         `gorm:"primarykey"` // 主键ID
+	ID        uint64         `gorm:"primary_key"` // 主键ID
 	CreatedAt time.Time      // 创建时间
 	UpdatedAt time.Time      // 更新时间
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"` // 删除时间
@@ -14,10 +16,79 @@ type common struct {
 
 type Video struct {
 	common
+	AuthID        int64  //新加的，1月16日
 	VideoCreator  int64  `gorm:"column:video_creator;type:bigint(20)" json:"video_creator"`
 	PlayUrl       string `gorm:"column:play_url;type:varchar(256)" json:"play_url"`
 	CoverUrl      string `gorm:"column:cover_url;type:varchar(256)" json:"cover_url"`
 	FavoriteCount int64  `gorm:"column:favorite_count;type:bigint(20)" json:"favorite_count"`
 	CommentCount  int64  `gorm:"column:comment_count;type:bigint(20)" json:"comment_count"`
 	Title         string `gorm:"column:title;type:varchar(256)" json:"title"`
+}
+
+type VideoModel struct {
+}
+
+var videoMedel *VideoModel
+var videoOnce sync.Once // 单例模式
+
+// GetVideoInstance 获取单例的实例
+func GetVideoInstance() *VideoModel {
+	videoOnce.Do(
+		func() {
+			videoMedel = &VideoModel{}
+		})
+	return videoMedel
+}
+
+// GetVideoByTime 根据创建时间获取视频 TODO：后续可以加一点推荐算法
+func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Video, error) {
+	var videos []Video
+
+	result := DB.Table("video").
+		Where("creat_at < ?", timePoint).
+		Order("creat_at DESC").
+		Limit(20).
+		Find(&videos)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	// 查询不到数据，就返回当前时间最新的30条数据
+	if len(videos) == 0 {
+		timePoint = time.Now()
+		result := DB.Table("video").
+			Where("creat_at < ?", timePoint).
+			Order("creat_at DESC").
+			Limit(20).
+			Find(&videos)
+		if result.Error != nil {
+			return nil, result.Error
+		}
+		return videos, nil
+	}
+
+	return videos, nil
+}
+
+func BuildVideo(videos []Video, userId int64) []*video_server.Video {
+	var videoResp []*video_server.Video
+
+	for _, video := range videos {
+		// 查询是否有喜欢的缓存，如果有，比对缓存，如果没有，构建缓存再查缓存
+		//favorite := isFavorite(userId, video.Id) //todo：如果useID为-1，那么直接返回false
+		//favoriteCount := getFavoriteCount(video.Id)
+		//commentCount := getCommentCount(video.Id)
+		videoResp = append(videoResp, &video_server.Video{
+			Id:       int64(video.ID),
+			AuthId:   video.AuthID,
+			PlayUrl:  video.PlayUrl,
+			CoverUrl: video.CoverUrl,
+			//FavoriteCount: favoriteCount,
+			//CommentCount:  commentCount,
+			//IsFavorite:    favorite,
+			Title: video.Title,
+		})
+	}
+
+	return videoResp
 }

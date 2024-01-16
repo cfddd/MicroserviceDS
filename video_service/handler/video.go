@@ -25,12 +25,35 @@ func NewVideoService() *VideoService {
 }
 
 func (v *VideoService) Feed(ctx context.Context, req *video_server.FeedRequest) (resp *video_server.FeedResponse, err error) {
-	out := new(FeedResponse)
-	err := c.cc.Invoke(ctx, VideoService_Feed_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
+	resp = new(video_server.FeedResponse)
+
+	//初始化
+	resp.StatusCode = exception.VideoUnExist
+	resp.StatusMsg = exception.GetMsg(exception.VideoUnExist)
+
+	//拿到时间
+	var posTime time.Time
+	if req.LatestTime == -1 {
+		posTime = time.Now()
+	} else {
+		posTime = time.Unix(req.LatestTime/1000, 0)
 	}
-	return out, nil
+
+	videoList, err := model.GetVideoInstance().GetVideoByTime(posTime)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.VideoList = model.BuildVideo(videoList, req.UserId)
+
+	// 获取列表中最早发布视频的时间作为下一次请求的时间
+	LastIndex := len(videoList) - 1
+	resp.NextTime = videoList[LastIndex].CreatedAt.Unix()
+
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
+
+	return resp, nil
 }
 
 // PublishAction 发布视频
