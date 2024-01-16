@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"router_service/middleware"
 	res "router_service/response"
-	service "router_service/server"
+	"router_service/server"
 	"strconv"
 	"sync"
 	exception "utils/status_code"
@@ -14,7 +14,7 @@ import (
 
 // UserRegister 用户注册
 func UserRegister(ctx *gin.Context) {
-	var userReq service.UserRequest
+	var userReq server.UserRequest
 
 	userName := ctx.PostForm("username")
 	if userName == "" {
@@ -28,7 +28,7 @@ func UserRegister(ctx *gin.Context) {
 	}
 	userReq.Password = passWord
 
-	userServiceClient := ctx.Keys["user_service"].(service.UserServiceClient)
+	userServiceClient := ctx.Keys["user_service"].(server.UserServiceClient)
 	userResp, err := userServiceClient.UserRegister(context.Background(), &userReq)
 	if err != nil {
 		PanicIfUserError(err)
@@ -51,7 +51,7 @@ func UserRegister(ctx *gin.Context) {
 
 // UserLogin 用户登录
 func UserLogin(ctx *gin.Context) {
-	var userReq service.UserRequest
+	var userReq server.UserRequest
 	//err := ctx.Bind(&userReq)
 	//if err != nil {
 	//	PanicIfUserError(err)
@@ -63,12 +63,12 @@ func UserLogin(ctx *gin.Context) {
 	userReq.Username = userName
 
 	passWord := ctx.Query("password")
-	if userName == "" {
+	if passWord == "" {
 		passWord = ctx.PostForm("password")
 	}
 	userReq.Password = passWord
 
-	userServiceClient := ctx.Keys["user_service"].(service.UserServiceClient)
+	userServiceClient := ctx.Keys["user_service"].(server.UserServiceClient)
 	userResp, err := userServiceClient.UserLogin(context.Background(), &userReq)
 	if err != nil {
 		PanicIfUserError(err)
@@ -112,25 +112,25 @@ func UserInfo(ctx *gin.Context) {
 func GetUserInfo(userIds []int64, ctx *gin.Context) (userInfos []res.User) {
 	var err error
 	// 构建三个服务的请求
-	var userInfoReq service.UserInfoRequest
-	var countInfoReq service.CountRequest
-	var followInfoReq service.FollowInfoRequest
+	var userInfoReq server.UserInfoRequest
+	var countInfoReq server.CountRequest
+	var followInfoReq server.FollowInfoRequest
 
 	userInfoReq.UserIds = userIds
 	countInfoReq.UserIds = userIds
 	followInfoReq.ToUserId = userIds
 
 	// 创建接收三个响应
-	var userResp *service.UserInfoResponse
-	var countInfoResp *service.CountResponse
-	var followInfoResp *service.FollowInfoResponse
+	var userResp *server.UserInfoResponse
+	var countInfoResp *server.CountResponse
+	var followInfoResp *server.FollowInfoResponse
 
 	// 分别去调用三个服务
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		userServiceClient := ctx.Keys["user_service"].(service.UserServiceClient)
+		userServiceClient := ctx.Keys["user_service"].(server.UserServiceClient)
 		userResp, err = userServiceClient.UserInfo(context.Background(), &userInfoReq)
 		if err != nil {
 			PanicIfUserError(err)
@@ -139,7 +139,7 @@ func GetUserInfo(userIds []int64, ctx *gin.Context) (userInfos []res.User) {
 
 	go func() {
 		defer wg.Done()
-		videoServiceClient := ctx.Keys["video_service"].(service.VideoServiceClient)
+		videoServiceClient := ctx.Keys["video_service"].(server.VideoServiceClient)
 		countInfoResp, err = videoServiceClient.CountInfo(context.Background(), &countInfoReq)
 		if err != nil {
 			PanicIfVideoError(err)
@@ -153,7 +153,7 @@ func GetUserInfo(userIds []int64, ctx *gin.Context) (userInfos []res.User) {
 		userIdStr, _ := ctx.Get("user_id")
 		userId, _ := userIdStr.(int64)
 		followInfoReq.UserId = userId
-		socialServiceClient := ctx.Keys["social_service"].(service.SocialServiceClient)
+		socialServiceClient := ctx.Keys["social_service"].(server.SocialServiceClient)
 		followInfoResp, err = socialServiceClient.GetFollowInfo(context.Background(), &followInfoReq)
 		if err != nil {
 			PanicIfFollowError(err)
@@ -170,7 +170,7 @@ func GetUserInfo(userIds []int64, ctx *gin.Context) (userInfos []res.User) {
 }
 
 // BuildUser 构建用户信息
-func BuildUser(user *service.User, count *service.Count, follow *service.FollowInfo) res.User {
+func BuildUser(user *server.User, count *server.Count, follow *server.FollowInfo) res.User {
 	return res.User{
 		Id:   user.Id,
 		Name: user.Name,
@@ -179,12 +179,8 @@ func BuildUser(user *service.User, count *service.Count, follow *service.FollowI
 		FollowerCount: follow.FollowerCount,
 		IsFollow:      follow.IsFollow,
 
-		//Avatar:          user.Avatar,
-		//BackgroundImage: user.BackgroundImage,
-		//Signature:       user.Signature,
-
-		TotalFavorited: strconv.FormatInt(count.TotalFavorited, 10), // 将int64转换成string
-		WorkCount:      count.WorkCount,
+		TotalFavorited: count.TotalFavorited,
 		FavoriteCount:  count.FavoriteCount,
+		ArticleCount:   count.ArticleCount,
 	}
 }
