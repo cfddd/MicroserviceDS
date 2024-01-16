@@ -3,12 +3,92 @@ package handler
 import (
 	"golang.org/x/net/context"
 	"social_service/model"
+	"social_service/pkg/redis"
 	social_pb "social_service/server"
 	utils "utils/status_code"
 )
 
 type SocialService struct {
 	social_pb.UnimplementedSocialServiceServer
+}
+
+// FollowAction 点击关注
+func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowRequest) (resp *social_pb.FollowResponse, err error) {
+	resp = new(social_pb.FollowResponse)
+
+	//初始化resp
+	resp.StatusCode = utils.ERROR
+	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+
+	//自己不能关注自己
+	if req.UserId == req.ToUserId {
+		resp.StatusCode = utils.FollowSelfErr
+		resp.StatusMsg = utils.GetMsg(utils.FollowSelfErr)
+		return resp, nil
+	}
+
+	err = redis.FollowAction(req.UserId, req.ToUserId, req.ActionType) //点赞操作，将信息存储在 redis 里面
+	if err != nil {
+		return resp, err
+	}
+
+	resp.StatusCode = utils.SUCCESS
+	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	return resp, nil
+}
+
+// GetFollowList 关注列表
+func (s *SocialService) GetFollowList(ctx context.Context, req *social_pb.FollowListRequest) (resp *social_pb.FollowListResponse, err error) {
+	resp = new(social_pb.FollowListResponse)
+
+	//初始化resp
+	resp.StatusCode = utils.ERROR
+	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+
+	err = redis.FollowList(req.UserId, &resp.UserId)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.StatusCode = utils.SUCCESS
+	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	return resp, nil
+}
+
+// GetFollowerList 粉丝列表（被关注列表）
+func (s *SocialService) GetFollowerList(ctx context.Context, req *social_pb.FollowListRequest) (resp *social_pb.FollowListResponse, err error) {
+	resp = new(social_pb.FollowListResponse)
+
+	//初始化resp
+	resp.StatusCode = utils.ERROR
+	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+
+	err = redis.FollowerList(req.UserId, &resp.UserId)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.StatusCode = utils.SUCCESS
+	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	return resp, nil
+}
+
+// GetFriendList 好友列表
+func (s *SocialService) GetFriendList(ctx context.Context, req *social_pb.FollowListRequest) (resp *social_pb.FollowListResponse, err error) {
+	resp = new(social_pb.FollowListResponse)
+
+	//初始化resp
+	resp.StatusCode = utils.ERROR
+	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+
+	err = redis.FriendList(req.UserId, &resp.UserId)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.StatusCode = utils.SUCCESS
+	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	return resp, nil
 }
 
 // PostMessage 发送信息
