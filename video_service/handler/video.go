@@ -13,20 +13,29 @@ import (
 	"utils/exception"
 	"video_service/model"
 	"video_service/pkg/db"
-	"video_service/server"
+	video_server "video_service/server"
 )
 
 type VideoService struct {
-	server.UnimplementedVideoServiceServer // 版本兼容问题
+	video_server.UnimplementedVideoServiceServer // 版本兼容问题
 }
 
 func NewVideoService() *VideoService {
 	return &VideoService{}
 }
 
+func (v *VideoService) Feed(ctx context.Context, req *video_server.FeedRequest) (resp *video_server.FeedResponse, err error) {
+	out := new(FeedResponse)
+	err := c.cc.Invoke(ctx, VideoService_Feed_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PublishAction 发布视频
-func (*VideoService) PublishAction(ctx context.Context, req *server.PublishActionRequest) (resp *server.PublishActionResponse, err error) {
-	resp = new(server.PublishActionResponse)
+func (*VideoService) PublishAction(ctx context.Context, req *video_server.PublishActionRequest) (resp *video_server.PublishActionResponse, err error) {
+	resp = new(video_server.PublishActionResponse)
 	reqString, err := json.Marshal(&req)
 
 	// 放入消息队列
@@ -77,9 +86,9 @@ func (*VideoService) PublishAction(ctx context.Context, req *server.PublishActio
 }
 
 // PublishAction1 发布视频
-func (*VideoService) PublishAction1(ctx context.Context, req *server.PublishActionRequest) (resp *service.PublishActionResponse, err error) {
+func (*VideoService) PublishAction1(ctx context.Context, req *video_server.PublishActionRequest) (resp *video_server.PublishActionResponse, err error) {
 	var updataErr, creatErr error
-	resp = new(server.PublishActionResponse)
+	resp = new(video_server.PublishActionResponse)
 	key := fmt.Sprintf("%s:%s", "user", "work_count")
 
 	// 获取参数,生成地址

@@ -20,7 +20,7 @@ func InitDb() {
 	Database(dns)
 }
 
-// Database 初始花数据库链接
+// Database 初始化数据库链接
 func Database(connString string) {
 	var ormLogger logger.Interface
 
