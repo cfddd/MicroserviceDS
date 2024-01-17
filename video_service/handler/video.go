@@ -49,7 +49,7 @@ func (v *VideoService) Feed(ctx context.Context, req *video_server.FeedRequest) 
 		return resp, err
 	}
 
-	resp.VideoList = model.BuildVideo(videoList, req.UserId)
+	resp.VideoList = BuildVideo(videoList, req.UserId)
 
 	// 获取列表中最早发布视频的时间作为下一次请求的时间
 	LastIndex := len(videoList) - 1
@@ -111,6 +111,148 @@ func (*VideoService) PublishAction(ctx context.Context, req *video_server.Publis
 	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 
 	return resp, nil
+}
+
+func PublishVideo() {
+	// 放入消息队列
+	conn := db.InitMQ()
+	// 创建通道
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Print(err)
+	}
+	defer ch.Close()
+
+	// 声明队列
+	q, err := ch.QueueDeclare(
+		"video_publish",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Print(err)
+	}
+
+	// 消费者
+	msgs, err := ch.Consume(
+		q.Name,
+		"video_service",
+		false, //手动确认
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Print(err)
+	}
+	var forever chan struct{}
+	go func() {
+		for d := range msgs {
+			logger.Log.Info("开始消费消息")
+			var req video_server.PublishActionRequest
+			err := json.Unmarshal(d.Body, &req)
+			if err != nil {
+				logger.Log.Error(err)
+			}
+
+			var updataErr, creatErr error
+			key := fmt.Sprintf("%s:%s", "user", "work_count")
+
+			// 获取参数,生成地址
+			title := req.Title
+			UUID := uuid.New()
+			videoDir := "douyin/video/" + title + "--" + UUID.String() + ".mp4"
+			pictureDir := "douyin/cover/" + title + "--" + UUID.String() + ".jpg"
+
+			videoUrl := viper.GetString("oss.link") + videoDir
+			pictureUrl := viper.GetString("oss.link") + pictureDir
+
+			// 等待上传和创建数组库完成
+			var wg sync.WaitGroup
+			wg.Add(2)
+
+			// 上传视频，切取封面，上传图片
+			go func() {
+				defer wg.Done()
+				// 上传视频
+				updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
+				// 获取封面,获取第几秒的封面
+				coverByte, _ := cut.Cover(videoUrl, "00:00:01")
+				// 上传封面
+				updataErr = oss7.UploadFileWithByte(pictureDir, coverByte)
+				log.Print("上传成功")
+			}()
+
+			var videoID *uint64 = new(uint64)
+			// 创建数据
+			go func(videoID *uint64) {
+				defer wg.Done()
+				// 创建video
+				// CreatedAt ? 不让写，会报错
+				video := model.Video{
+					VideoCreator: req.UserId,
+					Title:        title,
+					CoverUrl:     pictureUrl,
+					PlayUrl:      videoUrl,
+				}
+				*videoID, creatErr = model.GetVideoInstance().Create(&video)
+			}(videoID)
+
+			wg.Wait()
+
+			// 异步回滚
+			if updataErr != nil || creatErr != nil {
+				go func(videoID uint64) {
+					// 存入数据库失败，删除上传
+					if creatErr != nil {
+						_ = oss7.DeleteFile(videoDir)
+						_ = oss7.DeleteFile(pictureDir)
+					}
+					// 上传失败，删除数据库
+					if updataErr != nil {
+						// 根据url查找，效率比较低
+						// 使用id查找
+						_ = model.GetVideoInstance().DeleteVideoByID(videoID)
+					}
+				}(*videoID)
+			}
+
+			d.Ack(false) // 手动确认消息
+
+			// 发布成功，缓存中作品总数 + 1，如果不存在缓存则不做操作
+			exist, err := cache.Redis.HExists(cache.Ctx, key, strconv.FormatInt(req.UserId, 10)).Result()
+			if err != nil {
+				log.Print(err)
+			}
+
+			if exist {
+				// 字段存在，该记录数量 + 1
+				_, err = cache.Redis.HIncrBy(cache.Ctx, key, strconv.FormatInt(req.UserId, 10), 1).Result()
+				if err != nil {
+					log.Print(err)
+				}
+			}
+
+			// 发布成功延时双删发布列表
+			workKey := fmt.Sprintf("%s:%s:%s", "user", "work_list", strconv.FormatInt(req.UserId, 10))
+			err = cache.Redis.Del(cache.Ctx, workKey).Err()
+			if err != nil {
+				log.Print(err)
+			}
+
+			go func() {
+				//延时3秒执行
+				time.Sleep(time.Second * 3)
+				//再次删除缓存
+				cache.Redis.Del(cache.Ctx, workKey)
+			}()
+		}
+	}()
+	<-forever
 }
 
 // PublishAction1 发布视频
@@ -260,39 +402,14 @@ func (*VideoService) PublishList(ctx context.Context, req *video_server.PublishL
 
 	return resp, nil
 }
-
-// 通过缓存查询视频的获赞数量
-func getLikeCount(videoId int64) int64 {
-	setKey := fmt.Sprintf("%s:%s:%s", "video", "favorite_video", strconv.FormatInt(videoId, 10))
-
-	// 查看缓存是否存在，不存在这构建一次缓存，避免极端情况
-	setExists, err := cache.Redis.Exists(cache.Ctx, setKey).Result()
-	if err != nil {
-		log.Print(err)
-	}
-
-	if setExists == 0 {
-		err := buildVideoFavorite(videoId)
-		if err != nil {
-			log.Print(err)
-		}
-	}
-
-	count, err := cache.Redis.SCard(cache.Ctx, setKey).Result()
-	if err != nil {
-		log.Print(err)
-	}
-	return count
-}
-
 func BuildVideo(videos []model.Video, userId int64) []*video_server.Video {
 	var videoResp []*video_server.Video
 
 	for _, video := range videos {
 		// 查询是否有喜欢的缓存，如果有，比对缓存，如果没有，构建缓存再查缓存
 		favorite := isFavorite(userId, int64(video.ID))
-		favoriteCount := getLikeCount(int64(video.ID))
-		commentCount := getCommentCount(video.ID)
+		favoriteCount := getFavoriteCount(int64(video.ID))
+		commentCount := GetCommentCount(int64(video.ID))
 		videoResp = append(videoResp, &video_server.Video{
 			Id:            int64(video.ID),
 			AuthId:        video.AuthID,
@@ -301,6 +418,27 @@ func BuildVideo(videos []model.Video, userId int64) []*video_server.Video {
 			FavoriteCount: favoriteCount,
 			CommentCount:  commentCount,
 			IsFavorite:    favorite,
+			Title:         video.Title,
+		})
+	}
+
+	return videoResp
+}
+
+func BuildVideoForFavorite(videos []model.Video, isFavorite bool) []*video_server.Video {
+	var videoResp []*video_server.Video
+
+	for _, video := range videos {
+		favoriteCount := getFavoriteCount(int64(video.ID))
+		commentCount := GetCommentCount(int64(video.ID))
+		videoResp = append(videoResp, &video_server.Video{
+			Id:            int64(video.ID),
+			AuthId:        video.AuthID,
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
+			FavoriteCount: favoriteCount,
+			CommentCount:  commentCount,
+			IsFavorite:    isFavorite,
 			Title:         video.Title,
 		})
 	}

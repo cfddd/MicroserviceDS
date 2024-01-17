@@ -5,8 +5,6 @@ import (
 	"sync"
 	"time"
 	"utils/snowFlake"
-	"video_service/handler"
-	video_server "video_service/server"
 )
 
 type Common struct {
@@ -72,29 +70,6 @@ func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Video, error) {
 	return videos, nil
 }
 
-func BuildVideo(videos []Video, userId int64) []*video_server.Video {
-	var videoResp []*video_server.Video
-
-	for _, video := range videos {
-		// 查询是否有喜欢的缓存，如果有，比对缓存，如果没有，构建缓存再查缓存
-		//favorite := isFavorite(userId, video.Id) //todo：如果useID为-1，那么直接返回false
-		//favoriteCount := getFavoriteCount(video.Id)
-		commentCount := handler.GetCommentCount(int64(video.ID))
-		videoResp = append(videoResp, &video_server.Video{
-			Id:       int64(video.ID),
-			AuthId:   video.AuthID,
-			PlayUrl:  video.PlayUrl,
-			CoverUrl: video.CoverUrl,
-			//FavoriteCount: favoriteCount,
-			CommentCount: commentCount,
-			//IsFavorite:    favorite,
-			Title: video.Title,
-		})
-	}
-
-	return videoResp
-}
-
 // Create 创建视频信息
 func (*VideoModel) Create(video *Video) (ID uint64, err error) {
 	// 服务2
@@ -127,6 +102,20 @@ func (*VideoModel) GetVideoListByUser(userId int64) ([]Video, error) {
 
 	result := DB.Table("video").
 		Where("auth_id = ?", userId).
+		Find(&videos)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return videos, nil
+}
+
+// GetVideoList 根据视频Id获取视频列表
+func (*VideoModel) GetVideoList(videoIds []int64) ([]Video, error) {
+	var videos []Video
+
+	result := DB.Table("video").
+		Where("id IN ?", videoIds).
 		Find(&videos)
 	if result.Error != nil {
 		return nil, result.Error

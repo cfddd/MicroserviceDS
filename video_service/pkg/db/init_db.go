@@ -67,7 +67,7 @@ func Database(connString string) {
 }
 func migration() {
 	// 自动迁移
-	err := DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&model.Video{}, &model.Comment{}, &model.Like{})
+	err := DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&model.Video{}, &model.Comment{}, &model.Favorite{})
 	if err != nil {
 		log.Print("err")
 	}
