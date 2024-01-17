@@ -120,3 +120,17 @@ func (v *VideoModel) DeleteVideoByID(id uint64) error {
 
 	return nil
 }
+
+// GetVideoListByUser 根据用户的id找到视频列表
+func (*VideoModel) GetVideoListByUser(userId int64) ([]Video, error) {
+	var videos []Video
+
+	result := DB.Table("video").
+		Where("auth_id = ?", userId).
+		Find(&videos)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return videos, nil
+}

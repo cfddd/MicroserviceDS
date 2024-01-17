@@ -217,3 +217,146 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 
 	return resp, nil
 }
+
+// PublishList 发布列表
+func (*VideoService) PublishList(ctx context.Context, req *video_server.PublishListRequest) (resp *video_server.PublishListResponse, err error) {
+	resp = new(video_server.PublishListResponse)
+	var videos []model.Video
+	key := fmt.Sprintf("%s:%s:%s", "user", "work_list", strconv.FormatInt(req.UserId, 10))
+
+	// 根据用户id找到所有的视频,先找缓存，再查数据库
+	exists, err := cache.Redis.Exists(cache.Ctx, key).Result()
+	if err != nil {
+		return nil, fmt.Errorf("缓存错误：%v", err)
+	}
+
+	if exists > 0 {
+		videosString, err := cache.Redis.Get(cache.Ctx, key).Result()
+		if err != nil {
+			return nil, fmt.Errorf("缓存错误：%v", err)
+		}
+		err = json.Unmarshal([]byte(videosString), &videos)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		videos, err = model.GetVideoInstance().GetVideoListByUser(req.UserId)
+		if err != nil {
+			resp.StatusCode = exception.VideoUnExist
+			resp.StatusMsg = exception.GetMsg(exception.VideoUnExist)
+			return resp, err
+		}
+		// 放入缓存中
+		videosJson, _ := json.Marshal(videos)
+		err := cache.Redis.Set(cache.Ctx, key, videosJson, 12*time.Hour).Err()
+		if err != nil {
+			return nil, fmt.Errorf("缓存错误：%v", err)
+		}
+	}
+
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
+	resp.VideoList = BuildVideo(videos, req.UserId)
+
+	return resp, nil
+}
+
+// 查询缓存，判断是否喜欢
+func isFavorite(userId int64, videoId int64) bool {
+	var isFavorite bool
+	key := fmt.Sprintf("%s:%s:%s", "video", "favorite_video", strconv.FormatInt(videoId, 10))
+
+	exists, err := cache.Redis.Exists(cache.Ctx, key).Result()
+	if err != nil {
+		log.Print(err)
+	}
+
+	if exists > 0 {
+		isFavorite, err = cache.Redis.SIsMember(cache.Ctx, key, strconv.FormatInt(userId, 10)).Result()
+		if err != nil {
+			log.Print(err)
+		}
+	} else {
+		err := buildVideoFavorite(videoId)
+		if err != nil {
+			log.Print(err)
+		}
+		isFavorite, err = cache.Redis.SIsMember(cache.Ctx, key, strconv.FormatInt(userId, 10)).Result()
+		if err != nil {
+			log.Print(err)
+		}
+	}
+
+	return isFavorite
+}
+
+// 构建视频点赞缓存
+func buildVideoFavorite(videoId int64) error {
+	key := fmt.Sprintf("%s:%s:%s", "video", "favorite_video", strconv.FormatInt(videoId, 10))
+
+	// 查询出所有喜欢的视频
+	userIdList, err := model.GetFavoriteInstance().FavoriteUserList(videoId)
+	if err != nil {
+		return err
+	}
+
+	// 如果点赞数量为空，则不会创建cache，所以设计一个先放入，再删除，创建一个空记录。避免反复查表
+	userIds := make([]interface{}, len(userIdList))
+	for i, video := range userIdList {
+		userIds[i] = video
+	}
+
+	err = cache.Redis.SAdd(cache.Ctx, key, userIds...).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 通过缓存查询视频的获赞数量
+func getFavoriteCount(videoId int64) int64 {
+	setKey := fmt.Sprintf("%s:%s:%s", "video", "favorite_video", strconv.FormatInt(videoId, 10))
+
+	// 查看缓存是否存在，不存在这构建一次缓存，避免极端情况
+	setExists, err := cache.Redis.Exists(cache.Ctx, setKey).Result()
+	if err != nil {
+		log.Print(err)
+	}
+
+	if setExists == 0 {
+		err := buildVideoFavorite(videoId)
+		if err != nil {
+			log.Print(err)
+		}
+	}
+
+	count, err := cache.Redis.SCard(cache.Ctx, setKey).Result()
+	if err != nil {
+		log.Print(err)
+	}
+	return count
+}
+
+func BuildVideo(videos []model.Video, userId int64) []*video_server.Video {
+	var videoResp []*video_server.Video
+
+	for _, video := range videos {
+		// 查询是否有喜欢的缓存，如果有，比对缓存，如果没有，构建缓存再查缓存
+		favorite := isFavorite(userId, video.ID)
+		favoriteCount := getFavoriteCount(video.ID)
+		commentCount := getCommentCount(video.ID)
+		videoResp = append(videoResp, &video_server.Video{
+			Id:            int64(video.ID),
+			AuthId:        video.AuthID,
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
+			FavoriteCount: favoriteCount,
+			CommentCount:  commentCount,
+			IsFavorite:    favorite,
+			Title:         video.Title,
+		})
+	}
+
+	return videoResp
+}
