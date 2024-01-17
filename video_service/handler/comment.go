@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"strconv"
@@ -14,7 +14,7 @@ import (
 	video_pb "video_service/server"
 )
 
-func (v *VideoService) CommentAction(ctx *gin.Context, req *video_pb.CommentActionRequest) (resp *video_pb.CommentActionResponse, err error) {
+func (v *VideoService) CommentAction(ctx context.Context, req *video_pb.CommentActionRequest) (resp *video_pb.CommentActionResponse, err error) {
 	resp = new(video_pb.CommentActionResponse)
 	key := fmt.Sprintf("video:comment_list:%s", strconv.FormatInt(req.VideoId, 10))
 	comment := model.Comment{
@@ -101,7 +101,7 @@ func (v *VideoService) CommentAction(ctx *gin.Context, req *video_pb.CommentActi
 }
 
 // CommentList 获取评论列表
-func (*VideoService) CommentList(ctx *gin.Context, req *video_pb.CommentListRequest) (resp *video_pb.CommentListResponse, err error) {
+func (*VideoService) CommentList(ctx context.Context, req *video_pb.CommentListRequest) (resp *video_pb.CommentListResponse, err error) {
 	resp = new(video_pb.CommentListResponse)
 	var comments []model.Comment
 	key := fmt.Sprintf("video:comment_list:%s", strconv.FormatInt(req.VideoId, 10))
