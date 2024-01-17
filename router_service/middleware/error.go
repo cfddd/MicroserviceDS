@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"utils/status_code"
+	"utils/exception"
 )
 
 // ErrorMiddleWare 错误处理中间件，捕获panic抛出异常
