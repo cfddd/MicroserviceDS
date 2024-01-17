@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"utils/snowFlake"
+	"video_service/handler"
 	video_server "video_service/server"
 )
 
@@ -78,14 +79,14 @@ func BuildVideo(videos []Video, userId int64) []*video_server.Video {
 		// 查询是否有喜欢的缓存，如果有，比对缓存，如果没有，构建缓存再查缓存
 		//favorite := isFavorite(userId, video.Id) //todo：如果useID为-1，那么直接返回false
 		//favoriteCount := getFavoriteCount(video.Id)
-		//commentCount := getCommentCount(video.Id)
+		commentCount := handler.GetCommentCount(int64(video.ID))
 		videoResp = append(videoResp, &video_server.Video{
 			Id:       int64(video.ID),
 			AuthId:   video.AuthID,
 			PlayUrl:  video.PlayUrl,
 			CoverUrl: video.CoverUrl,
 			//FavoriteCount: favoriteCount,
-			//CommentCount:  commentCount,
+			CommentCount: commentCount,
 			//IsFavorite:    favorite,
 			Title: video.Title,
 		})

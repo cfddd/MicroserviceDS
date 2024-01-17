@@ -174,11 +174,35 @@ func buildCommentCache(videoId int64) error {
 			continue
 		}
 		members = append(members, &redis.Z{
-			Score:  float64(comment.CreatedAt.Unix()),
+			Score:  float64(comment.CreatedAt.Unix()), //根据评论时间的先后对缓存中的评论进行排序
 			Member: commentJson,
 		})
 	}
 
 	err = cache.Redis.ZAdd(cache.Ctx, key, members...).Err()
 	return err
+}
+
+// GetCommentCount 通过缓存查看视频得评论数量
+func GetCommentCount(videoId int64) int64 {
+	key := fmt.Sprintf("video:comment_list:%s", strconv.FormatInt(videoId, 10))
+
+	exists, err := cache.Redis.Exists(cache.Ctx, key).Result()
+	if err != nil {
+		log.Print(err)
+	}
+
+	if exists == 0 { //如果缓存不存在就构建缓存
+		err := buildCommentCache(videoId)
+		if err != nil {
+			log.Print(err)
+		}
+	}
+
+	count, err := cache.Redis.ZCard(cache.Ctx, key).Result()
+	if err != nil {
+		log.Print(err)
+	}
+
+	return count
 }
