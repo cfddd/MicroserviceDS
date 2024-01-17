@@ -70,16 +70,6 @@ func (*UserModel) FindUserById(id int64) (*User, error) {
 	return &user, nil
 }
 
-// FindUserByNum 根据抖音号查找用户,并返回对象
-func (*UserModel) FindUserByNum(num string) (*User, error) {
-	user := User{}
-	res := DB.Where("douyin_num=?", num).First(&user)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	return &user, nil
-}
-
 // CheckUserExist 检查User是否存在（已经被注册过了）
 func (*UserModel) CheckUserExist(username string) bool {
 	user := User{}

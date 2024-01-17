@@ -9,7 +9,7 @@ import (
 	"user_service/internal/model"
 	"user_service/pkg/redis"
 	"user_service/server"
-	exception "utils/status_code"
+	"utils/exception"
 )
 
 type UserService struct {
@@ -20,7 +20,8 @@ func NewUserService() *UserService {
 	return &UserService{}
 }
 
-func (*UserService) UserRefister(ctx context.Context, req *server.UserRequest) (resp *server.UserResponse, err error) {
+// 用户注册
+func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (resp *server.UserResponse, err error) {
 	resp = new(server.UserResponse)
 	var user model.User
 

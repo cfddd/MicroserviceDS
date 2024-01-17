@@ -7,29 +7,29 @@ import (
 	"utils/snowFlake"
 )
 
-type Like struct {
+type Favorite struct {
 	Common
 	UserId  uint64 `gorm:"column:user_id;type:bigint(20) unsigned;NOT NULL" json:"user_id"`
 	VideoId uint64 `gorm:"column:video_id;type:bigint(20) unsigned;NOT NULL" json:"video_id"`
 }
 
-type LikeModel struct {
+type FavoriteModel struct {
 }
 
-var likeModel *LikeModel
+var favoriteModel *FavoriteModel
 var favoriteOnce sync.Once
 
-func GetFavoriteInstance() *LikeModel {
+func GetFavoriteInstance() *FavoriteModel {
 	favoriteOnce.Do(
 		func() {
-			likeModel = &LikeModel{}
+			favoriteModel = &FavoriteModel{}
 		})
-	return likeModel
+	return favoriteModel
 }
 
 // AddFavorite 创建点赞
-func (*LikeModel) AddFavorite(tx *gorm.DB, like *Like) error {
-	result := tx.Where("user_id=? AND video_id=?", like.UserId, like.VideoId).First(&like)
+func (*FavoriteModel) AddFavorite(tx *gorm.DB, favorite *Favorite) error {
+	result := tx.Where("user_id=? AND video_id=?", favorite.UserId, favorite.VideoId).First(&favorite)
 	// 发生除没找到记录的其它错误
 	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return result.Error
@@ -37,14 +37,13 @@ func (*LikeModel) AddFavorite(tx *gorm.DB, like *Like) error {
 
 	// 如果找到了记录，更新is_favorite置为0
 	if result.RowsAffected > 0 {
-		like.IsFavorite = true
-		result = tx.Save(&favorite)
+		result = tx.Delete(result)
 		if result.Error != nil {
 			return result.Error
 		}
 	} else {
 		flake, _ := snowFlake.NewSnowFlake(7, 2)
-		favorite.Id = flake.NextId()
+		favorite.Common.ID = uint64(flake.NextId())
 		result = tx.Create(&favorite)
 		if result.Error != nil {
 			return result.Error
@@ -52,20 +51,6 @@ func (*LikeModel) AddFavorite(tx *gorm.DB, like *Like) error {
 	}
 
 	return nil
-}
-
-// IsFavorite 根据用户id和视频id获取点赞状态
-func (*FavoriteModel) IsFavorite(userId int64, videoId int64) (bool, error) {
-	var isFavorite bool
-
-	result := DB.Table("favorite").
-		Where("user_id = ? AND video_id = ?", userId, videoId).
-		Pluck("is_favorite", &isFavorite)
-	if result.Error != nil {
-		return true, result.Error
-	}
-
-	return isFavorite, nil
 }
 
 // DeleteFavorite 删除点赞
@@ -77,8 +62,7 @@ func (*FavoriteModel) DeleteFavorite(tx *gorm.DB, favorite *Favorite) error {
 	}
 	// 如果找到了记录，更新is_favorite置为0
 	if result.RowsAffected > 0 {
-		favorite.IsFavorite = false
-		result = tx.Save(&favorite)
+		result = tx.Delete(result)
 		if result.Error != nil {
 			return result.Error
 		}
