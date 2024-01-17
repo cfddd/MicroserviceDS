@@ -12,6 +12,10 @@ type SocialService struct {
 	social_pb.UnimplementedSocialServiceServer
 }
 
+func NewSocialService() *SocialService {
+	return &SocialService{}
+}
+
 // FollowAction 点击关注
 func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowRequest) (resp *social_pb.FollowResponse, err error) {
 	resp = new(social_pb.FollowResponse)
@@ -92,9 +96,9 @@ func (s *SocialService) GetFriendList(ctx context.Context, req *social_pb.Follow
 }
 
 // PostMessage 发送信息
-func (s *SocialService) PostMessage(ctx *context.Context, req *social_pb.PostMessageRequest) (resp *social_pb.PostMessageResponse, err error) {
+func (s *SocialService) PostMessage(ctx context.Context, req *social_pb.PostMessageRequest) (resp *social_pb.PostMessageResponse, err error) {
 	resp = new(social_pb.PostMessageResponse)
-	message := model.Message{
+	message := model.Messages{
 		UserId:   req.UserId,
 		ToUserId: req.ToUserId,
 		Message:  req.Content,
@@ -114,7 +118,7 @@ func (s *SocialService) PostMessage(ctx *context.Context, req *social_pb.PostMes
 // GetMessage 获取信息列表
 func (s *SocialService) GetMessage(ctx context.Context, req *social_pb.GetMessageRequest) (resp *social_pb.GetMessageResponse, err error) {
 	resp = new(social_pb.GetMessageResponse) // 结构体用new
-	var messages []model.Message
+	var messages []model.Messages
 	err = model.GetMessageInstance().GetMessage(req.UserId, req.ToUserId, req.PreMsgTime, &messages)
 	if err != nil {
 		resp.StatusCode = exception.ERROR

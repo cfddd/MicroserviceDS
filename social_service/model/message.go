@@ -6,7 +6,7 @@ import (
 	"utils/snowFlake"
 )
 
-type Message struct {
+type Messages struct {
 	Id        int64 `gorm:"primary_key"`
 	UserId    int64
 	ToUserId  int64
@@ -28,7 +28,7 @@ func GetMessageInstance() *MessageModel {
 	return messageModel
 }
 
-func (m *MessageModel) PostMessage(message Message) error {
+func (m *MessageModel) PostMessage(message Messages) error {
 	message.CreatedAt = time.Now()
 	// 雪花算法生成唯一id
 	flake, _ := snowFlake.NewSnowFlake(7, 3)
@@ -37,7 +37,7 @@ func (m *MessageModel) PostMessage(message Message) error {
 	return err
 }
 
-func (m *MessageModel) GetMessage(uId, tId, preMsgTime int64, messages *[]Message) error {
-	err := DB.Model(&Message{}).Where("UserId + ToUserId = ? and CreatedAt > ? ", uId+tId, preMsgTime).Find(messages).Error
+func (m *MessageModel) GetMessage(uId, tId, preMsgTime int64, messages *[]Messages) error {
+	err := DB.Model(&Messages{}).Where("UserId + ToUserId = ? and CreatedAt > ? ", uId+tId, preMsgTime).Find(messages).Error
 	return err
 }

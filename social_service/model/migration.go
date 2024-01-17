@@ -10,7 +10,7 @@ func migration() {
 	//	log.Print("err")
 	//}
 
-	err := DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&Message{})
+	err := DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&Messages{})
 	// Todo 判断error 写入日志
 	if err != nil {
 		log.Print("err")
