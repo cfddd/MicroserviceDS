@@ -9,7 +9,7 @@ import (
 	"router_service/server"
 	"strconv"
 	"sync"
-	exception "utils/status_code"
+	"utils/exception"
 )
 
 // UserRegister 用户注册

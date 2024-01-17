@@ -7,7 +7,7 @@ import (
 	res "router_service/response"
 	service "router_service/server"
 	"strconv"
-	exception "utils/status_code"
+	"utils/exception"
 )
 
 func PostMessage(ctx *gin.Context) {
