@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -29,6 +30,7 @@ func Resolver() map[string]interface{} {
 	userServiceAddr, _ := serviceDiscovery.GetService("user_service")
 	userConn, err := grpc.Dial(userServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
+		fmt.Println("获取视频服务实例出错")
 		logger.Log.Fatal(err)
 	}
 	userClient := service.NewUserServiceClient(userConn)

@@ -49,35 +49,35 @@ LOCK TABLES `comments` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `likes`
+-- Table structure for table `favorites`
 --
 
-DROP TABLE IF EXISTS `likes`;
+DROP TABLE IF EXISTS `favorites`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `likes` (
+CREATE TABLE `favorites` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  `deleted_at` datetime(3) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL,
   `user_id` bigint unsigned NOT NULL,
   `video_id` bigint unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_likes_deleted_at` (`deleted_at`),
-  KEY `fk_likes_videos1_idx` (`video_id`),
   KEY `fk_users_likes` (`user_id`),
+  KEY `fk_likes_videos1_idx` (`video_id`),
   CONSTRAINT `fk_likes_videos1` FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`),
   CONSTRAINT `fk_users_likes` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `likes`
+-- Dumping data for table `favorites`
 --
 
-LOCK TABLES `likes` WRITE;
-/*!40000 ALTER TABLE `likes` DISABLE KEYS */;
-/*!40000 ALTER TABLE `likes` ENABLE KEYS */;
+LOCK TABLES `favorites` WRITE;
+/*!40000 ALTER TABLE `favorites` DISABLE KEYS */;
+/*!40000 ALTER TABLE `favorites` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -212,4 +212,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-17 16:19:51
+-- Dump completed on 2024-01-17 20:31:30
