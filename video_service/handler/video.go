@@ -402,6 +402,7 @@ func (*VideoService) PublishList(ctx context.Context, req *video_server.PublishL
 
 	return resp, nil
 }
+
 func BuildVideo(videos []model.Video, userId int64) []*video_server.Video {
 	var videoResp []*video_server.Video
 

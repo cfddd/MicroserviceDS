@@ -63,7 +63,7 @@ func Database(connString string) {
 	sqlDB.SetConnMaxLifetime(time.Second * 20) // 超时时间
 	DB = db
 
-	migration()
+	//migration()
 }
 func migration() {
 	// 自动迁移
