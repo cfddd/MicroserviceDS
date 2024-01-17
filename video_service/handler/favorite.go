@@ -21,7 +21,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 	favoriteKey := fmt.Sprintf("%s:%s:%s", "user", "favorit_list", strconv.FormatInt(req.UserId, 10))
 
 	action := req.ActionType
-	var favorite model.Favorite
+	var favorite model.Favorites
 	favorite.UserId = uint64(req.UserId)
 	favorite.VideoId = uint64(req.VideoId)
 
@@ -173,7 +173,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 // FavoriteList 喜欢列表
 func (*VideoService) FavoriteList(ctx context.Context, req *video_server.FavoriteListRequest) (resp *video_server.FavoriteListResponse, err error) {
 	resp = new(video_server.FavoriteListResponse)
-	var videos []model.Video
+	var videos []model.Videos
 	key := fmt.Sprintf("%s:%s:%s", "user", "favorit_list", strconv.FormatInt(req.UserId, 10))
 
 	exits, err := cache.Redis.Exists(cache.Ctx, key).Result()

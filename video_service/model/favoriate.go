@@ -7,7 +7,7 @@ import (
 	"utils/snowFlake"
 )
 
-type Favorite struct {
+type Favorites struct {
 	Common
 	UserId  uint64 `gorm:"column:user_id;type:bigint(20) unsigned;NOT NULL" json:"user_id"`
 	VideoId uint64 `gorm:"column:video_id;type:bigint(20) unsigned;NOT NULL" json:"video_id"`
@@ -28,7 +28,7 @@ func GetFavoriteInstance() *FavoriteModel {
 }
 
 // AddFavorite 创建点赞
-func (*FavoriteModel) AddFavorite(tx *gorm.DB, favorite *Favorite) error {
+func (*FavoriteModel) AddFavorite(tx *gorm.DB, favorite *Favorites) error {
 	result := tx.Where("user_id=? AND video_id=?", favorite.UserId, favorite.VideoId).First(&favorite)
 	// 发生除没找到记录的其它错误
 	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -54,7 +54,7 @@ func (*FavoriteModel) AddFavorite(tx *gorm.DB, favorite *Favorite) error {
 }
 
 // DeleteFavorite 删除点赞
-func (*FavoriteModel) DeleteFavorite(tx *gorm.DB, favorite *Favorite) error {
+func (*FavoriteModel) DeleteFavorite(tx *gorm.DB, favorite *Favorites) error {
 	result := tx.Where("user_id=? AND video_id=?", favorite.UserId, favorite.VideoId).First(&favorite)
 	// 发生除没找到记录的其它错误
 	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {

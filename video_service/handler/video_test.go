@@ -8,7 +8,7 @@ import (
 )
 
 func TestCommon(t *testing.T) {
-	cfd := model.Video{
+	cfd := model.Videos{
 		Common: model.Common{
 			ID:        1,
 			CreatedAt: time.Now(),

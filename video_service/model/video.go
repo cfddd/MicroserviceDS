@@ -14,7 +14,7 @@ type Common struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"` // 删除时间
 }
 
-type Video struct {
+type Videos struct {
 	Common
 	AuthID        int64  `gorm:"column:auth_id;type:bigint(20)" json:"auth_id"`
 	VideoCreator  int64  `gorm:"column:video_creator;type:bigint(20)" json:"video_creator"`
@@ -41,8 +41,8 @@ func GetVideoInstance() *VideoModel {
 }
 
 // GetVideoByTime 根据创建时间获取视频 TODO：后续可以加一点推荐算法
-func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Video, error) {
-	var videos []Video
+func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Videos, error) {
+	var videos []Videos
 
 	result := DB.Table("video").
 		Where("creat_at < ?", timePoint).
@@ -71,7 +71,7 @@ func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Video, error) {
 }
 
 // Create 创建视频信息
-func (*VideoModel) Create(video *Video) (ID uint64, err error) {
+func (*VideoModel) Create(video *Videos) (ID uint64, err error) {
 	// 服务2
 	flake, _ := snowFlake.NewSnowFlake(7, 2)
 	video.ID = uint64(flake.NextId())
@@ -83,7 +83,7 @@ func (*VideoModel) Create(video *Video) (ID uint64, err error) {
 
 // DeleteVideoByID 通过ID删除视频
 func (v *VideoModel) DeleteVideoByID(id uint64) error {
-	var video Video
+	var video Videos
 	if err := DB.Where("id = ?", id).First(&video).Error; err != nil {
 		return err
 	}
@@ -97,8 +97,8 @@ func (v *VideoModel) DeleteVideoByID(id uint64) error {
 }
 
 // GetVideoListByUser 根据用户的id找到视频列表
-func (*VideoModel) GetVideoListByUser(userId int64) ([]Video, error) {
-	var videos []Video
+func (*VideoModel) GetVideoListByUser(userId int64) ([]Videos, error) {
+	var videos []Videos
 
 	result := DB.Table("video").
 		Where("auth_id = ?", userId).
@@ -111,8 +111,8 @@ func (*VideoModel) GetVideoListByUser(userId int64) ([]Video, error) {
 }
 
 // GetVideoList 根据视频Id获取视频列表
-func (*VideoModel) GetVideoList(videoIds []int64) ([]Video, error) {
-	var videos []Video
+func (*VideoModel) GetVideoList(videoIds []int64) ([]Videos, error) {
+	var videos []Videos
 
 	result := DB.Table("video").
 		Where("id IN ?", videoIds).

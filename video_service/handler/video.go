@@ -193,7 +193,7 @@ func PublishVideo() {
 				defer wg.Done()
 				// 创建video
 				// CreatedAt ? 不让写，会报错
-				video := model.Video{
+				video := model.Videos{
 					VideoCreator: req.UserId,
 					Title:        title,
 					CoverUrl:     pictureUrl,
@@ -292,7 +292,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 		defer wg.Done()
 		// 创建video
 		// CreatedAt ? 不让写，会报错
-		video := model.Video{
+		video := model.Videos{
 			VideoCreator: req.UserId,
 			Title:        title,
 			CoverUrl:     pictureUrl,
@@ -363,7 +363,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 // PublishList 发布列表
 func (*VideoService) PublishList(ctx context.Context, req *video_server.PublishListRequest) (resp *video_server.PublishListResponse, err error) {
 	resp = new(video_server.PublishListResponse)
-	var videos []model.Video
+	var videos []model.Videos
 	key := fmt.Sprintf("%s:%s:%s", "user", "work_list", strconv.FormatInt(req.UserId, 10))
 
 	// 根据用户id找到所有的视频,先找缓存，再查数据库
@@ -403,7 +403,7 @@ func (*VideoService) PublishList(ctx context.Context, req *video_server.PublishL
 	return resp, nil
 }
 
-func BuildVideo(videos []model.Video, userId int64) []*video_server.Video {
+func BuildVideo(videos []model.Videos, userId int64) []*video_server.Video {
 	var videoResp []*video_server.Video
 
 	for _, video := range videos {
@@ -426,7 +426,7 @@ func BuildVideo(videos []model.Video, userId int64) []*video_server.Video {
 	return videoResp
 }
 
-func BuildVideoForFavorite(videos []model.Video, isFavorite bool) []*video_server.Video {
+func BuildVideoForFavorite(videos []model.Videos, isFavorite bool) []*video_server.Video {
 	var videoResp []*video_server.Video
 
 	for _, video := range videos {
