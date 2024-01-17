@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"sync"
 	"time"
+	"utils/snowFlake"
 	video_server "video_service/server"
 )
 
@@ -16,7 +17,7 @@ type Common struct {
 
 type Video struct {
 	Common
-	AuthID        int64  //新加的，1月16日
+	AuthID        int64  `gorm:"column:auth_id;type:bigint(20)" json:"auth_id"`
 	VideoCreator  int64  `gorm:"column:video_creator;type:bigint(20)" json:"video_creator"`
 	PlayUrl       string `gorm:"column:play_url;type:varchar(256)" json:"play_url"`
 	CoverUrl      string `gorm:"column:cover_url;type:varchar(256)" json:"cover_url"`
@@ -91,4 +92,30 @@ func BuildVideo(videos []Video, userId int64) []*video_server.Video {
 	}
 
 	return videoResp
+}
+
+// Create 创建视频信息
+func (*VideoModel) Create(video *Video) (ID uint64, err error) {
+	// 服务2
+	flake, _ := snowFlake.NewSnowFlake(7, 2)
+	video.ID = uint64(flake.NextId())
+
+	DB.Create(&video)
+
+	return video.ID, nil
+}
+
+// DeleteVideoByID 通过ID删除视频
+func (v *VideoModel) DeleteVideoByID(id uint64) error {
+	var video Video
+	if err := DB.Where("id = ?", id).First(&video).Error; err != nil {
+		return err
+	}
+
+	// 删除找到的记录
+	if err := DB.Delete(&video).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

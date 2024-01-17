@@ -137,15 +137,16 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 		defer wg.Done()
 		// 上传视频
 		updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
-		// 获取封面,获取第几秒的封面
+		// 获取封面,获取第1.0秒的封面
 		coverByte, _ := cut.Cover(videoUrl, "1.0")
 		// 上传封面
 		updataErr = oss7.UploadFileWithByte(pictureDir, coverByte)
 		logger.Log.Info("上传成功")
 	}()
 
+	var videoID *uint64 = new(uint64)
 	// 创建数据
-	go func() {
+	go func(videoID *uint64) {
 		defer wg.Done()
 		// 创建video
 		// CreatedAt ? 不让写，会报错
@@ -155,14 +156,14 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 			CoverUrl:     pictureUrl,
 			PlayUrl:      videoUrl,
 		}
-		creatErr = model.GetVideoInstance().Create(&video)
-	}()
+		*videoID, creatErr = model.GetVideoInstance().Create(&video)
+	}(videoID)
 
 	wg.Wait()
 
 	// 异步回滚
 	if updataErr != nil || creatErr != nil {
-		go func() {
+		go func(videoID uint64) {
 			// 存入数据库失败，删除上传
 			if creatErr != nil {
 				_ = oss7.DeleteFile(videoDir)
@@ -170,10 +171,11 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 			}
 			// 上传失败，删除数据库
 			if updataErr != nil {
-				// TODO 根据url查找，效率比较低
-				_ = model.GetVideoInstance().DeleteVideoByUrl(videoUrl)
+				// 根据url查找，效率比较低
+				// 使用id查找
+				_ = model.GetVideoInstance().DeleteVideoByID(videoID)
 			}
-		}()
+		}(*videoID)
 	}
 	if updataErr != nil || creatErr != nil {
 		resp.StatusCode = exception.VideoUploadErr

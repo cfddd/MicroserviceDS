@@ -31,3 +31,13 @@ func TestGetFileUrl(t *testing.T) {
 
 	t.Log(GetFileUrl("douyin/video/v-16.mp4"))
 }
+
+// 测试删除文件
+func TestDeleteFile(t *testing.T) {
+	logger.InitLogger()
+	config.InitConfig()
+	InitBucket()
+
+	err := DeleteFile("cfd")
+	t.Log(err)
+}

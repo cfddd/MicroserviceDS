@@ -92,6 +92,8 @@ func GetFileUrl(key string) string {
 	return privateAccessURL
 }
 
+// DeleteFile 删除文件
+// key 文件路径只需要 microservice-v1 里面的文件路径
 func DeleteFile(key string) error {
 	mac := auth.New(QiniuClient.accessKey, QiniuClient.secretKey)
 	cfg := storage.Config{
