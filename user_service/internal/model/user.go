@@ -15,7 +15,7 @@ type COMMON struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"` // 删除时间
 }
 
-type User struct {
+type Users struct {
 	COMMON
 	Name       string `gorm:"unique" json:"name"`      //名字
 	Password   string `gorm:"notnull" json:"password"` //密码
@@ -39,7 +39,7 @@ func GetInstance() *UserModel {
 }
 
 // Create 创建用户
-func (*UserModel) Create(user *User) error {
+func (*UserModel) Create(user *Users) error {
 	flake, _ := snowFlake.NewSnowFlake(7, 1)
 	user.ID = flake.NextId()
 	user.Password = encryption.HashPassword(user.Password)
@@ -51,8 +51,8 @@ func (*UserModel) Create(user *User) error {
 }
 
 // FindUserByName 根据用户名称查找用户,并返回对象
-func (*UserModel) FindUserByName(username string) (*User, error) {
-	user := User{}
+func (*UserModel) FindUserByName(username string) (*Users, error) {
+	user := Users{}
 	res := DB.Where("name=?", username).First(&user)
 	if res.Error != nil {
 		return nil, res.Error
@@ -61,8 +61,8 @@ func (*UserModel) FindUserByName(username string) (*User, error) {
 }
 
 // FindUserById 根据id查找用户,并返回对象
-func (*UserModel) FindUserById(id int64) (*User, error) {
-	user := User{}
+func (*UserModel) FindUserById(id int64) (*Users, error) {
+	user := Users{}
 	res := DB.Where("id=?", id).First(&user)
 	if res.Error != nil {
 		return nil, res.Error
@@ -72,7 +72,7 @@ func (*UserModel) FindUserById(id int64) (*User, error) {
 
 // CheckUserExist 检查User是否存在（已经被注册过了）
 func (*UserModel) CheckUserExist(username string) bool {
-	user := User{}
+	user := Users{}
 	err := DB.Where("name=?", username).First(&user).Error
 	if err == gorm.ErrRecordNotFound {
 		return true //用户不存在

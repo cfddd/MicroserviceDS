@@ -8,7 +8,7 @@ import (
 	"utils/snowFlake"
 )
 
-type Comment struct {
+type Comments struct {
 	Id        int64 `gorm:"primaryKey"`
 	UserId    int64
 	VideoId   int64
@@ -34,7 +34,7 @@ func GetCommentInstance() *CommentModel {
 }
 
 // AddComment 新增评论
-func (*CommentModel) AddComment(tx *gorm.DB, comment *Comment) (id int64, err error) {
+func (*CommentModel) AddComment(tx *gorm.DB, comment *Comments) (id int64, err error) {
 	// 雪花算法分配唯一id
 	flake, _ := snowFlake.NewSnowFlake(7, 2)
 	comment.Id = flake.NextId()
@@ -49,7 +49,7 @@ func (*CommentModel) AddComment(tx *gorm.DB, comment *Comment) (id int64, err er
 
 // DeleteCommment 删除评论
 func (*CommentModel) DeleteCommment(commentId int64) (err error) {
-	var comment Comment
+	var comment Comments
 	res := DB.First(&comment, commentId)
 	if res.Error != nil {
 		return res.Error
@@ -67,19 +67,19 @@ func (*CommentModel) DeleteCommment(commentId int64) (err error) {
 }
 
 // GetComment 根据评论id找到对应评论
-func (*CommentModel) GetComment(tx *gorm.DB, commentId int64) (Comment, error) {
-	comment := Comment{}
-	res := tx.Model(&Comment{}).Where("id = ?", commentId).First(&comment)
+func (*CommentModel) GetComment(tx *gorm.DB, commentId int64) (Comments, error) {
+	comment := Comments{}
+	res := tx.Model(&Comments{}).Where("id = ?", commentId).First(&comment)
 	if res.Error != nil {
 		return comment, res.Error
 	}
 	return comment, nil
 }
 
-func (*CommentModel) CommentList(videoId int64) (comments []Comment, err error) {
-	comments = []Comment{}
+func (*CommentModel) CommentList(videoId int64) (comments []Comments, err error) {
+	comments = []Comments{}
 
-	res := DB.Model(&Comment{}).Where("video_id = ?", videoId).Find(&comments)
+	res := DB.Model(&Comments{}).Where("video_id = ?", videoId).Find(&comments)
 	if res.Error != nil {
 		return nil, res.Error
 	}

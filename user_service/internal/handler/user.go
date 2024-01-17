@@ -23,7 +23,7 @@ func NewUserService() *UserService {
 // 用户注册
 func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (resp *server.UserResponse, err error) {
 	resp = new(server.UserResponse)
-	var user model.User
+	var user model.Users
 
 	//检查用户是否存在
 	exist := model.GetInstance().CheckUserExist(req.Username)
@@ -84,7 +84,7 @@ func (*UserService) UserLogin(ctx context.Context, req *server.UserRequest) (res
 	}
 }
 
-func RespUser(u *model.User) *server.User {
+func RespUser(u *model.Users) *server.User {
 	user := server.User{
 		Id:   u.ID,
 		Name: u.Name,
@@ -101,7 +101,7 @@ func (*UserService) UserInfo(ctx context.Context, req *server.UserInfoRequest) (
 
 	for _, userId := range userIds {
 		//查看缓存是否存在，若存在获取需要的信息
-		var user *model.User
+		var user *model.Users
 		key := fmt.Sprintf("%s:%s:%s", "user", "info", strconv.FormatInt(userId, 10))
 
 		exists, err := redis.Redis.Exists(redis.Ctx, key).Result()

@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"strconv"
@@ -14,10 +14,10 @@ import (
 	video_pb "video_service/server"
 )
 
-func (v *VideoService) CommentAction(ctx *gin.Context, req *video_pb.CommentActionRequest) (resp *video_pb.CommentActionResponse, err error) {
+func (v *VideoService) CommentAction(ctx context.Context, req *video_pb.CommentActionRequest) (resp *video_pb.CommentActionResponse, err error) {
 	resp = new(video_pb.CommentActionResponse)
 	key := fmt.Sprintf("video:comment_list:%s", strconv.FormatInt(req.VideoId, 10))
-	comment := model.Comment{
+	comment := model.Comments{
 		UserId:  req.UserId,
 		VideoId: req.VideoId,
 		Content: req.CommentText,
@@ -101,9 +101,9 @@ func (v *VideoService) CommentAction(ctx *gin.Context, req *video_pb.CommentActi
 }
 
 // CommentList 获取评论列表
-func (*VideoService) CommentList(ctx *gin.Context, req *video_pb.CommentListRequest) (resp *video_pb.CommentListResponse, err error) {
+func (*VideoService) CommentList(ctx context.Context, req *video_pb.CommentListRequest) (resp *video_pb.CommentListResponse, err error) {
 	resp = new(video_pb.CommentListResponse)
-	var comments []model.Comment
+	var comments []model.Comments
 	key := fmt.Sprintf("video:comment_list:%s", strconv.FormatInt(req.VideoId, 10))
 
 	count, err := cache.Redis.Exists(cache.Ctx, key).Result()
@@ -128,7 +128,7 @@ func (*VideoService) CommentList(ctx *gin.Context, req *video_pb.CommentListRequ
 	}
 
 	for _, commentString := range commentsString {
-		var comment model.Comment
+		var comment model.Comments
 		err := json.Unmarshal([]byte(commentString), &comment)
 		if err != nil {
 			return nil, err
@@ -144,7 +144,7 @@ func (*VideoService) CommentList(ctx *gin.Context, req *video_pb.CommentListRequ
 }
 
 // BuildComments 转格式
-func BuildComments(comments []model.Comment) []*video_pb.Comment {
+func BuildComments(comments []model.Comments) []*video_pb.Comment {
 	var commentResp []*video_pb.Comment
 	for _, comment := range comments {
 		commentResp = append(commentResp, &video_pb.Comment{

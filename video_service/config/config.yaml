@@ -26,9 +26,9 @@ redis:
   password: 123456
 
 rabbitMQ:
-  user: guest
-  password: guest
-  address: localhost:5672
+  user: admin
+  password: admin123456
+  address: http://hhblog.top:15672/
 
 oss:
   link: douyin.cfddfc.online

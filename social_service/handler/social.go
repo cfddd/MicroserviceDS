@@ -5,11 +5,15 @@ import (
 	"social_service/model"
 	"social_service/pkg/redis"
 	social_pb "social_service/server"
-	utils "utils/status_code"
+	"utils/exception"
 )
 
 type SocialService struct {
 	social_pb.UnimplementedSocialServiceServer
+}
+
+func NewSocialService() *SocialService {
+	return &SocialService{}
 }
 
 // FollowAction 点击关注
@@ -17,13 +21,13 @@ func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowR
 	resp = new(social_pb.FollowResponse)
 
 	//初始化resp
-	resp.StatusCode = utils.ERROR
-	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+	resp.StatusCode = exception.ERROR
+	resp.StatusMsg = exception.GetMsg(exception.ERROR)
 
 	//自己不能关注自己
 	if req.UserId == req.ToUserId {
-		resp.StatusCode = utils.FollowSelfErr
-		resp.StatusMsg = utils.GetMsg(utils.FollowSelfErr)
+		resp.StatusCode = exception.FollowSelfErr
+		resp.StatusMsg = exception.GetMsg(exception.FollowSelfErr)
 		return resp, nil
 	}
 
@@ -32,8 +36,8 @@ func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowR
 		return resp, err
 	}
 
-	resp.StatusCode = utils.SUCCESS
-	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 	return resp, nil
 }
 
@@ -42,16 +46,16 @@ func (s *SocialService) GetFollowList(ctx context.Context, req *social_pb.Follow
 	resp = new(social_pb.FollowListResponse)
 
 	//初始化resp
-	resp.StatusCode = utils.ERROR
-	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+	resp.StatusCode = exception.ERROR
+	resp.StatusMsg = exception.GetMsg(exception.ERROR)
 
 	err = redis.FollowList(req.UserId, &resp.UserId)
 	if err != nil {
 		return resp, err
 	}
 
-	resp.StatusCode = utils.SUCCESS
-	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 	return resp, nil
 }
 
@@ -60,16 +64,16 @@ func (s *SocialService) GetFollowerList(ctx context.Context, req *social_pb.Foll
 	resp = new(social_pb.FollowListResponse)
 
 	//初始化resp
-	resp.StatusCode = utils.ERROR
-	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+	resp.StatusCode = exception.ERROR
+	resp.StatusMsg = exception.GetMsg(exception.ERROR)
 
 	err = redis.FollowerList(req.UserId, &resp.UserId)
 	if err != nil {
 		return resp, err
 	}
 
-	resp.StatusCode = utils.SUCCESS
-	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 	return resp, nil
 }
 
@@ -78,35 +82,35 @@ func (s *SocialService) GetFriendList(ctx context.Context, req *social_pb.Follow
 	resp = new(social_pb.FollowListResponse)
 
 	//初始化resp
-	resp.StatusCode = utils.ERROR
-	resp.StatusMsg = utils.GetMsg(utils.ERROR)
+	resp.StatusCode = exception.ERROR
+	resp.StatusMsg = exception.GetMsg(exception.ERROR)
 
 	err = redis.FriendList(req.UserId, &resp.UserId)
 	if err != nil {
 		return resp, err
 	}
 
-	resp.StatusCode = utils.SUCCESS
-	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 	return resp, nil
 }
 
 // PostMessage 发送信息
-func (s *SocialService) PostMessage(ctx *context.Context, req *social_pb.PostMessageRequest) (resp *social_pb.PostMessageResponse, err error) {
+func (s *SocialService) PostMessage(ctx context.Context, req *social_pb.PostMessageRequest) (resp *social_pb.PostMessageResponse, err error) {
 	resp = new(social_pb.PostMessageResponse)
-	message := model.Message{
+	message := model.Messages{
 		UserId:   req.UserId,
 		ToUserId: req.ToUserId,
 		Message:  req.Content,
 	}
 	err = model.GetMessageInstance().PostMessage(message)
 	if err != nil {
-		resp.StatusCode = utils.ERROR
-		resp.StatusMsg = utils.GetMsg(utils.ERROR)
+		resp.StatusCode = exception.ERROR
+		resp.StatusMsg = exception.GetMsg(exception.ERROR)
 		return resp, nil
 	}
-	resp.StatusCode = utils.SUCCESS
-	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 
 	return resp, nil
 }
@@ -114,11 +118,11 @@ func (s *SocialService) PostMessage(ctx *context.Context, req *social_pb.PostMes
 // GetMessage 获取信息列表
 func (s *SocialService) GetMessage(ctx context.Context, req *social_pb.GetMessageRequest) (resp *social_pb.GetMessageResponse, err error) {
 	resp = new(social_pb.GetMessageResponse) // 结构体用new
-	var messages []model.Message
+	var messages []model.Messages
 	err = model.GetMessageInstance().GetMessage(req.UserId, req.ToUserId, req.PreMsgTime, &messages)
 	if err != nil {
-		resp.StatusCode = utils.ERROR
-		resp.StatusMsg = utils.GetMsg(utils.ERROR)
+		resp.StatusCode = exception.ERROR
+		resp.StatusMsg = exception.GetMsg(exception.ERROR)
 		return resp, nil
 	}
 
@@ -131,7 +135,7 @@ func (s *SocialService) GetMessage(ctx context.Context, req *social_pb.GetMessag
 			CreatedAt: message.CreatedAt.Unix(),
 		})
 	}
-	resp.StatusCode = utils.SUCCESS
-	resp.StatusMsg = utils.GetMsg(utils.SUCCESS)
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 	return resp, nil
 }

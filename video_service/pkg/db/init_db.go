@@ -63,11 +63,11 @@ func Database(connString string) {
 	sqlDB.SetConnMaxLifetime(time.Second * 20) // 超时时间
 	DB = db
 
-	migration()
+	//migration()
 }
 func migration() {
 	// 自动迁移
-	err := DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&model.Video{}, &model.Comment{}, &model.Favorite{})
+	err := DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&model.Video{}, &model.Comments{}, &model.Favorite{})
 	if err != nil {
 		log.Print("err")
 	}
