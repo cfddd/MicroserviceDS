@@ -11,9 +11,15 @@ mysql:
   password: 123456
   database: douyin
 
+logger:
+  level: info
+  prefix: '[dousheng]'
+  director: log
+  show_line: true
+  log_in_console: true
 
 etcd:
-  address: 127.0.0.1:2379
+  address: cfddfc.online:2379
 
 redis:
   address: 127.0.0.1:6379
