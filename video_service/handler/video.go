@@ -446,3 +446,112 @@ func BuildVideoForFavorite(videos []model.Videos, isFavorite bool) []*video_serv
 
 	return videoResp
 }
+
+// CountInfo 计数信息
+func (*VideoService) CountInfo(ctx context.Context, req *video_server.CountRequest) (resp *video_server.CountResponse, err error) {
+	resp = new(video_server.CountResponse)
+
+	userIds := req.UserIds
+
+	for _, userId := range userIds {
+		var count video_server.Count
+
+		// 获取赞的数量
+		var videos []model.Videos
+		exist, err := cache.Redis.HExists(cache.Ctx, "user:total_favorite", strconv.FormatInt(userId, 10)).Result()
+		if err != nil {
+			return nil, fmt.Errorf("缓存错误：%v", err)
+		}
+
+		if exist == false {
+			// 获取所有作品数量
+			var totalFavorite int64
+			totalFavorite = 0
+			videos, err = model.GetVideoInstance().GetVideoListByUser(userId)
+
+			for _, video := range videos {
+				videoId := video.ID
+
+				favoriteCount, err := model.GetFavoriteInstance().GetVideoFavoriteCount(int64(videoId))
+				if err != nil {
+					resp.StatusCode = exception.UserNoFavorite
+					resp.StatusMsg = exception.GetMsg(exception.UserNoFavorite)
+					return resp, err
+				}
+				log.Print(favoriteCount)
+				totalFavorite = totalFavorite + favoriteCount
+				log.Print(totalFavorite)
+			}
+			// 放入缓存
+			err = cache.Redis.HSet(cache.Ctx, "user:total_favorite", strconv.FormatInt(userId, 10), totalFavorite).Err()
+			if err != nil {
+				return nil, err
+			}
+			cache.Redis.Expire(cache.Ctx, "user:total_favorite", 5*time.Minute)
+		} else {
+			// 存在缓存
+			count.TotalFavorited, err = cache.Redis.HGet(cache.Ctx, "user:total_favorite", strconv.FormatInt(userId, 10)).Int64()
+			if err != nil {
+				return nil, fmt.Errorf("缓存错误：%v", err)
+			}
+		}
+
+		// 获取作品数量
+		exist, err = cache.Redis.HExists(cache.Ctx, "user:work_count", strconv.FormatInt(userId, 10)).Result()
+		if err != nil {
+			return nil, fmt.Errorf("缓存错误：%v", err)
+		}
+		// 如果存在则读缓存
+		if exist {
+			count.WorkCount, err = cache.Redis.HGet(cache.Ctx, "user:work_count", strconv.FormatInt(userId, 10)).Int64()
+			if err != nil {
+				return nil, fmt.Errorf("缓存错误：%v", err)
+			}
+		} else {
+			// 不存在则查数据库
+			count.WorkCount, err = model.GetVideoInstance().GetWorkCount(userId)
+			if err != nil {
+				resp.StatusCode = exception.UserNoVideo
+				resp.StatusMsg = exception.GetMsg(exception.UserNoVideo)
+				return resp, err
+			}
+			// 放入缓存
+			err := cache.Redis.HSet(cache.Ctx, "user:work_count", strconv.FormatInt(userId, 10), count.WorkCount).Err()
+			if err != nil {
+				return nil, fmt.Errorf("缓存错误：%v", err)
+			}
+		}
+
+		// 获取喜欢数量
+		exist, err = cache.Redis.HExists(cache.Ctx, "user:favorite_count", strconv.FormatInt(userId, 10)).Result()
+		if err != nil {
+			return nil, fmt.Errorf("缓存错误：%v", err)
+		}
+		if exist {
+			count.FavoriteCount, err = cache.Redis.HGet(cache.Ctx, "user:favorite_count", strconv.FormatInt(userId, 10)).Int64()
+			if err != nil {
+				return nil, fmt.Errorf("缓存错误：%v", err)
+			}
+		} else {
+			count.FavoriteCount, err = model.GetFavoriteInstance().GetFavoriteCount(userId)
+			if err != nil {
+				resp.StatusCode = exception.UserNoFavorite
+				resp.StatusMsg = exception.GetMsg(exception.UserNoFavorite)
+				return resp, err
+			}
+
+			// 放入缓存
+			err := cache.Redis.HSet(cache.Ctx, "user:favorite_count", strconv.FormatInt(userId, 10), count.FavoriteCount).Err()
+			if err != nil {
+				return nil, fmt.Errorf("缓存错误：%v", err)
+			}
+		}
+
+		resp.Counts = append(resp.Counts, &count)
+	}
+
+	resp.StatusCode = exception.SUCCESS
+	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
+
+	return resp, nil
+}

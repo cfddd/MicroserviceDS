@@ -23,7 +23,7 @@ etcd:
 
 redis:
   address: 127.0.0.1:6379
-  password:
+  password: wuwang222
 
 rabbitMQ:
   user: dfc

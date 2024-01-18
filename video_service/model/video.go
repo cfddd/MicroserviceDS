@@ -123,3 +123,13 @@ func (*VideoModel) GetVideoList(videoIds []int64) ([]Videos, error) {
 
 	return videos, nil
 }
+
+// GetWorkCount 获取用户的作品数量
+func (*VideoModel) GetWorkCount(userId int64) (int64, error) {
+	var count int64
+	DB.Table("video").
+		Where("auth_id=?", userId).
+		Count(&count)
+
+	return count, nil
+}
