@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"strconv"
 	"time"
 	"user_service/internal/model"
@@ -26,6 +27,9 @@ func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (
 	var user model.Users
 
 	//检查用户是否存在
+	if user.Name == "" {
+		return resp, errors.New("用户名不能为空")
+	}
 	exist := model.GetInstance().CheckUserExist(req.Username)
 	if exist == false {
 		resp.StatusCode = exception.UserExist
