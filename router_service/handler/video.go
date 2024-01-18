@@ -62,17 +62,18 @@ func PublishAction(ctx *gin.Context) {
 	var publishActionReq service.PublishActionRequest
 
 	userId, _ := ctx.Get("user_id")
+
 	publishActionReq.UserId = userId.(int64)
 
 	publishActionReq.Title = ctx.PostForm("title")
 
-	formFile, _ := ctx.FormFile("data")
+	formFile, err := ctx.FormFile("data")
+
 	file, err := formFile.Open()
-	if err != nil {
-		PanicIfVideoError(err)
-	}
+
 	defer file.Close()
 	buf, err := io.ReadAll(file) // 将文件读取到字节切片buf中
+
 	if err != nil {
 		PanicIfVideoError(err)
 	}

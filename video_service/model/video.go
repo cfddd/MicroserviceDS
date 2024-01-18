@@ -1,14 +1,16 @@
 package model
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 	"sync"
 	"time"
 	"utils/snowFlake"
+	"video_service/logger"
 )
 
 type Common struct {
-	ID        uint64         `gorm:"primary_key"` // 主键ID
+	ID        int64          `gorm:"primary_key"` // 主键ID
 	CreatedAt time.Time      // 创建时间
 	UpdatedAt time.Time      // 更新时间
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"` // 删除时间
@@ -17,7 +19,6 @@ type Common struct {
 type Videos struct {
 	Common
 	AuthID        int64  `gorm:"column:auth_id;type:bigint(20)" json:"auth_id"`
-	VideoCreator  int64  `gorm:"column:video_creator;type:bigint(20)" json:"video_creator"`
 	PlayUrl       string `gorm:"column:play_url;type:varchar(256)" json:"play_url"`
 	CoverUrl      string `gorm:"column:cover_url;type:varchar(256)" json:"cover_url"`
 	FavoriteCount int64  `gorm:"column:favorite_count;type:bigint(20)" json:"favorite_count"`
@@ -71,18 +72,22 @@ func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Videos, error) {
 }
 
 // Create 创建视频信息
-func (*VideoModel) Create(video *Videos) (ID uint64, err error) {
+func (*VideoModel) Create(video Videos) (int64, error) {
 	// 服务2
-	flake, _ := snowFlake.NewSnowFlake(7, 2)
-	video.ID = uint64(flake.NextId())
-
+	flake, err := snowFlake.NewSnowFlake(7, 2)
+	if err != nil {
+		logger.Log.Error(err)
+		return 0, err
+	}
+	video.ID = flake.NextId()
+	fmt.Println(video, "video")
 	DB.Create(&video)
 
 	return video.ID, nil
 }
 
 // DeleteVideoByID 通过ID删除视频
-func (v *VideoModel) DeleteVideoByID(id uint64) error {
+func (v *VideoModel) DeleteVideoByID(id int64) error {
 	var video Videos
 	if err := DB.Where("id = ?", id).First(&video).Error; err != nil {
 		return err

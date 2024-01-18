@@ -43,7 +43,7 @@ func (*FavoriteModel) AddFavorite(tx *gorm.DB, favorite *Favorites) error {
 		}
 	} else {
 		flake, _ := snowFlake.NewSnowFlake(7, 2)
-		favorite.Common.ID = uint64(flake.NextId())
+		favorite.Common.ID = flake.NextId()
 		result = tx.Create(&favorite)
 		if result.Error != nil {
 			return result.Error

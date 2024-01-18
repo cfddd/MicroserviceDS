@@ -187,26 +187,26 @@ func PublishVideo() {
 				log.Print("上传成功")
 			}()
 
-			var videoID *uint64 = new(uint64)
+			var videoID int64
 			// 创建数据
-			go func(videoID *uint64) {
+			go func() {
 				defer wg.Done()
 				// 创建video
 				// CreatedAt ? 不让写，会报错
 				video := model.Videos{
-					VideoCreator: req.UserId,
-					Title:        title,
-					CoverUrl:     pictureUrl,
-					PlayUrl:      videoUrl,
+					AuthID:   req.UserId,
+					Title:    title,
+					CoverUrl: pictureUrl,
+					PlayUrl:  videoUrl,
 				}
-				*videoID, creatErr = model.GetVideoInstance().Create(&video)
-			}(videoID)
+				videoID, creatErr = model.GetVideoInstance().Create(video)
+			}()
 
 			wg.Wait()
 
 			// 异步回滚
 			if updataErr != nil || creatErr != nil {
-				go func(videoID uint64) {
+				go func() {
 					// 存入数据库失败，删除上传
 					if creatErr != nil {
 						_ = oss7.DeleteFile(videoDir)
@@ -218,7 +218,7 @@ func PublishVideo() {
 						// 使用id查找
 						_ = model.GetVideoInstance().DeleteVideoByID(videoID)
 					}
-				}(*videoID)
+				}()
 			}
 
 			d.Ack(false) // 手动确认消息
@@ -286,26 +286,26 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 		logger.Log.Info("上传成功")
 	}()
 
-	var videoID *uint64 = new(uint64)
+	var videoID int64
 	// 创建数据
-	go func(videoID *uint64) {
+	go func() {
 		defer wg.Done()
 		// 创建video
 		// CreatedAt ? 不让写，会报错
 		video := model.Videos{
-			VideoCreator: req.UserId,
-			Title:        title,
-			CoverUrl:     pictureUrl,
-			PlayUrl:      videoUrl,
+			AuthID:   req.UserId,
+			Title:    title,
+			CoverUrl: pictureUrl,
+			PlayUrl:  videoUrl,
 		}
-		*videoID, creatErr = model.GetVideoInstance().Create(&video)
-	}(videoID)
+		videoID, creatErr = model.GetVideoInstance().Create(video)
+	}()
 
 	wg.Wait()
 
 	// 异步回滚
 	if updataErr != nil || creatErr != nil {
-		go func(videoID uint64) {
+		go func() {
 			// 存入数据库失败，删除上传
 			if creatErr != nil {
 				_ = oss7.DeleteFile(videoDir)
@@ -317,7 +317,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 				// 使用id查找
 				_ = model.GetVideoInstance().DeleteVideoByID(videoID)
 			}
-		}(*videoID)
+		}()
 	}
 	if updataErr != nil || creatErr != nil {
 		resp.StatusCode = exception.VideoUploadErr
