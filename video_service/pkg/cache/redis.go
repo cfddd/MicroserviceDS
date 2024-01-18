@@ -13,9 +13,10 @@ var Ctx = context.Background()
 
 func InitRedis() {
 	addr := viper.GetString("redis.address")
+	pwd := viper.GetString("redis.password")
 	Redis = redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: "",
+		Password: pwd,
 		DB:       0, // 存入DB0
 	})
 }

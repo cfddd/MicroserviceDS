@@ -460,7 +460,7 @@ func (*VideoService) CountInfo(ctx context.Context, req *video_server.CountReque
 		var videos []model.Videos
 		exist, err := cache.Redis.HExists(cache.Ctx, "user:total_favorite", strconv.FormatInt(userId, 10)).Result()
 		if err != nil {
-			return nil, fmt.Errorf("缓存错误：%v", err)
+			return nil, fmt.Errorf("1缓存错误：%v", err)
 		}
 
 		if exist == false {
@@ -492,20 +492,20 @@ func (*VideoService) CountInfo(ctx context.Context, req *video_server.CountReque
 			// 存在缓存
 			count.TotalFavorited, err = cache.Redis.HGet(cache.Ctx, "user:total_favorite", strconv.FormatInt(userId, 10)).Int64()
 			if err != nil {
-				return nil, fmt.Errorf("缓存错误：%v", err)
+				return nil, fmt.Errorf("2缓存错误：%v", err)
 			}
 		}
 
 		// 获取作品数量
 		exist, err = cache.Redis.HExists(cache.Ctx, "user:work_count", strconv.FormatInt(userId, 10)).Result()
 		if err != nil {
-			return nil, fmt.Errorf("缓存错误：%v", err)
+			return nil, fmt.Errorf("3缓存错误：%v", err)
 		}
 		// 如果存在则读缓存
 		if exist {
 			count.WorkCount, err = cache.Redis.HGet(cache.Ctx, "user:work_count", strconv.FormatInt(userId, 10)).Int64()
 			if err != nil {
-				return nil, fmt.Errorf("缓存错误：%v", err)
+				return nil, fmt.Errorf("4缓存错误：%v", err)
 			}
 		} else {
 			// 不存在则查数据库
@@ -518,19 +518,19 @@ func (*VideoService) CountInfo(ctx context.Context, req *video_server.CountReque
 			// 放入缓存
 			err := cache.Redis.HSet(cache.Ctx, "user:work_count", strconv.FormatInt(userId, 10), count.WorkCount).Err()
 			if err != nil {
-				return nil, fmt.Errorf("缓存错误：%v", err)
+				return nil, fmt.Errorf("5缓存错误：%v", err)
 			}
 		}
 
 		// 获取喜欢数量
 		exist, err = cache.Redis.HExists(cache.Ctx, "user:favorite_count", strconv.FormatInt(userId, 10)).Result()
 		if err != nil {
-			return nil, fmt.Errorf("缓存错误：%v", err)
+			return nil, fmt.Errorf("6缓存错误：%v", err)
 		}
 		if exist {
 			count.FavoriteCount, err = cache.Redis.HGet(cache.Ctx, "user:favorite_count", strconv.FormatInt(userId, 10)).Int64()
 			if err != nil {
-				return nil, fmt.Errorf("缓存错误：%v", err)
+				return nil, fmt.Errorf("7缓存错误：%v", err)
 			}
 		} else {
 			count.FavoriteCount, err = model.GetFavoriteInstance().GetFavoriteCount(userId)
@@ -543,7 +543,7 @@ func (*VideoService) CountInfo(ctx context.Context, req *video_server.CountReque
 			// 放入缓存
 			err := cache.Redis.HSet(cache.Ctx, "user:favorite_count", strconv.FormatInt(userId, 10), count.FavoriteCount).Err()
 			if err != nil {
-				return nil, fmt.Errorf("缓存错误：%v", err)
+				return nil, fmt.Errorf("8缓存错误：%v", err)
 			}
 		}
 
