@@ -23,12 +23,12 @@ etcd:
 
 redis:
   address: 127.0.0.1:6379
-  password: 123456
+  password:
 
 rabbitMQ:
-  user: guest
-  password: guest
-  address: 127.0.0.1:5672
+  user: dfc
+  password: dfc
+  address:  125.220.97.238:5672
   vhost:
 
 oss:

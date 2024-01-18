@@ -22,7 +22,7 @@ func UserRegister(ctx *gin.Context) {
 	}
 	userReq.Username = userName
 
-	passWord := ctx.PostForm("username")
+	passWord := ctx.PostForm("password")
 	if passWord == "" {
 		passWord = ctx.Query("password")
 	}

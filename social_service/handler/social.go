@@ -21,6 +21,7 @@ func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowR
 	resp = new(social_pb.FollowResponse)
 
 	//初始化resp
+	//初始化resp
 	resp.StatusCode = exception.ERROR
 	resp.StatusMsg = exception.GetMsg(exception.ERROR)
 
@@ -137,5 +138,30 @@ func (s *SocialService) GetMessage(ctx context.Context, req *social_pb.GetMessag
 	}
 	resp.StatusCode = exception.SUCCESS
 	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
+	return resp, nil
+}
+func (*SocialService) GetFollowInfo(ctx context.Context, req *social_pb.FollowInfoRequest) (resp *social_pb.FollowInfoResponse, err error) {
+	resp = new(social_pb.FollowInfoResponse)
+	for _, toUserId := range req.ToUserId {
+		/* mysql
+		res1, err1 := model.GetFollowInstance().IsFollow(req.UserId, toUserId)
+		cnt2, err2 := model.GetFollowInstance().GetFollowCount(toUserId)
+		cnt3, err3 := model.GetFollowInstance().GetFollowerCount(toUserId)
+		*/
+		res1, err1 := redis.IsFollow(req.UserId, toUserId)
+		cnt2, err2 := redis.FollowCount(toUserId)
+		cnt3, err3 := redis.FollowerCount(toUserId)
+		if err1 != nil || err2 != nil || err3 != nil {
+			resp.StatusCode = exception.ERROR
+			resp.StatusMsg = exception.GetMsg(exception.ERROR)
+			return resp, nil
+		}
+		resp.FollowInfo = append(resp.FollowInfo, &social_pb.FollowInfo{
+			IsFollow:      res1,
+			FollowCount:   cnt2,
+			FollowerCount: cnt3,
+			ToUserId:      toUserId,
+		})
+	}
 	return resp, nil
 }

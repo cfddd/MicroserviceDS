@@ -26,9 +26,12 @@ func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (
 	resp = new(server.UserResponse)
 	var user model.Users
 
+	user.Name = req.Username
+	user.Password = req.Password
+
 	//检查用户是否存在
-	if user.Name == "" {
-		return resp, errors.New("用户名不能为空")
+	if user.Name == "" || user.Password == "" {
+		return resp, errors.New("用户名或密码不能为空")
 	}
 	exist := model.GetInstance().CheckUserExist(req.Username)
 	if exist == false {
@@ -36,9 +39,6 @@ func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (
 		resp.StatusMsg = exception.GetMsg(exception.UserExist)
 		return resp, err
 	}
-
-	user.Name = req.Username
-	user.Password = req.Password
 
 	//创建用户
 	err = model.GetInstance().Create(&user)
