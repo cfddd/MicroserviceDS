@@ -91,3 +91,9 @@ func FollowCount(UserID int64) (int64, error) {
 func FollowerCount(toUserID int64) (int64, error) {
 	return Redis.SCard(ctx, GenerateFollowerKey(toUserID)).Result()
 }
+
+// IsFollow 是否被关注
+func IsFollow(UserId int64, ToUserId int64) (bool, error) {
+	result, err := Redis.SIsMember(ctx, GenerateFollowKey(UserId), ToUserId).Result()
+	return result, err
+}
