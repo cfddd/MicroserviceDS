@@ -72,6 +72,9 @@ func (*UserModel) FindUserById(id int64) (*Users, error) {
 
 // CheckUserExist 检查User是否存在（已经被注册过了）
 func (*UserModel) CheckUserExist(username string) bool {
+	if username == "" {
+		return true
+	}
 	user := Users{}
 	err := DB.Where("name=?", username).First(&user).Error
 	if err == gorm.ErrRecordNotFound {

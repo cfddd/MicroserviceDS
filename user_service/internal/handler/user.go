@@ -80,6 +80,7 @@ func (*UserService) UserLogin(ctx context.Context, req *server.UserRequest) (res
 	} else {
 		resp.StatusCode = exception.SUCCESS
 		resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
+		resp.UserId = user.ID
 		return resp, nil
 	}
 }
