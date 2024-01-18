@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/spf13/viper"
 	"net/http"
 	"router_service/configs"
 	"router_service/discovery"
@@ -16,16 +15,15 @@ func main() {
 	resolver := discovery.Resolver()
 	r := router.InitRouter(resolver)
 	server := &http.Server{
-		Addr:           viper.GetString("server.port"),
+		Addr:           configs.GetServerAddr(),
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-
 	err := server.ListenAndServe()
 	if err != nil {
 		logger.Log.Fatal("启动失败...")
 	}
-	logger.Log.Info("router_server启动成功")
+
 }

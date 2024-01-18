@@ -54,7 +54,7 @@ func InitRabbitMQUrl() string {
 	user := viper.GetString("rabbitMQ.user")
 	password := viper.GetString("rabbitMQ.password")
 	address := viper.GetString("rabbitMQ.address")
-
-	url := strings.Join([]string{"amqp://", user, ":", password, "@", address, "/"}, "")
+	vhost := viper.GetString("rabbitMQ.vhost")
+	url := strings.Join([]string{"amqp://", user, ":", password, "@", address, "/", vhost}, "")
 	return url
 }

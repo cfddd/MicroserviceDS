@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"path"
 	"router_service/logger"
@@ -21,4 +22,11 @@ func InitConfig() {
 		panic(err)
 	}
 	logger.Log.Info("读取配置文件--成功--")
+}
+
+func GetServerAddr() string {
+	addr := viper.GetString("server.address")
+	port := viper.GetString("server.port")
+
+	return fmt.Sprintf("%s:%s", addr, port)
 }

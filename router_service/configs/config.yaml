@@ -1,6 +1,6 @@
 server:
   name: router_service  # 服务名称
-  port: 10000
+  port: 8999
   address: 127.0.0.1  # 服务地址
 
 jwt:

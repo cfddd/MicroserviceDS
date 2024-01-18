@@ -26,9 +26,10 @@ redis:
   password: 123456
 
 rabbitMQ:
-  user: admin
-  password: admin123456
-  address: http://hhblog.top:15672/
+  user: guest
+  password: guest
+  address: 127.0.0.1:5672
+  vhost:
 
 oss:
   link: douyin.cfddfc.online
