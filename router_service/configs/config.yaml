@@ -18,4 +18,4 @@ logger:
 
 
 etcd:
-  address: 47.109.59.237:2379
+  address: 127.0.0.1:2379

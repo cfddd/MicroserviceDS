@@ -2,9 +2,9 @@ CREATE DATABASE  IF NOT EXISTS `douyin` /*!40100 DEFAULT CHARACTER SET utf8mb4 C
 USE `douyin`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
--- Host: localhost    Database: douyin
+-- Host: cfddfc.online    Database: douyin
 -- ------------------------------------------------------
--- Server version	8.0.32
+-- Server version	8.2.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -31,22 +31,13 @@ CREATE TABLE `comments` (
   `deleted_at` datetime(3) DEFAULT NULL,
   `video_id` bigint unsigned DEFAULT NULL,
   `user_id` bigint DEFAULT NULL,
-  `content` varchar(2048) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `content` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_comments_deleted_at` (`deleted_at`),
   KEY `fk_videos_comments` (`video_id`),
   CONSTRAINT `fk_videos_comments` FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=59863268751974401 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `comments`
---
-
-LOCK TABLES `comments` WRITE;
-/*!40000 ALTER TABLE `comments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `comments` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `favorites`
@@ -68,17 +59,8 @@ CREATE TABLE `favorites` (
   KEY `fk_likes_videos1_idx` (`video_id`),
   CONSTRAINT `fk_likes_videos1` FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`),
   CONSTRAINT `fk_users_likes` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=59875446024445953 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `favorites`
---
-
-LOCK TABLES `favorites` WRITE;
-/*!40000 ALTER TABLE `favorites` DISABLE KEYS */;
-/*!40000 ALTER TABLE `favorites` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `messages`
@@ -92,21 +74,11 @@ CREATE TABLE `messages` (
   `user_id` bigint unsigned NOT NULL,
   `follow_to_id` bigint NOT NULL,
   `created_at` datetime DEFAULT NULL,
-  `content` varchar(2048) COLLATE utf8mb4_general_ci NOT NULL,
+  `content` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_messages_users1_idx` (`user_id`),
-  CONSTRAINT `fk_messages_users1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  KEY `fk_messages_users1_idx` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `messages`
---
-
-LOCK TABLES `messages` WRITE;
-/*!40000 ALTER TABLE `messages` DISABLE KEYS */;
-/*!40000 ALTER TABLE `messages` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_relations`
@@ -128,15 +100,6 @@ CREATE TABLE `user_relations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_relations`
---
-
-LOCK TABLES `user_relations` WRITE;
-/*!40000 ALTER TABLE `user_relations` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_relations` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `users`
 --
 
@@ -148,25 +111,16 @@ CREATE TABLE `users` (
   `created_at` datetime(3) DEFAULT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
   `deleted_at` datetime(3) DEFAULT NULL,
-  `douyin_num` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `name` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `password` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `total_favorite` bigint DEFAULT NULL,
-  `favorite_count` bigint DEFAULT NULL,
-  `article_count` bigint DEFAULT NULL,
+  `douyin_num` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `total_favorite` bigint DEFAULT '0',
+  `favorite_count` bigint DEFAULT '0',
+  `article_count` bigint DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_users_deleted_at` (`deleted_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=59843939817885697 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `users`
---
-
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `videos`
@@ -180,28 +134,18 @@ CREATE TABLE `videos` (
   `created_at` datetime(3) DEFAULT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
   `deleted_at` datetime(3) DEFAULT NULL,
-  `video_creator` bigint DEFAULT NULL,
-  `play_url` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cover_url` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `auth_id` bigint unsigned NOT NULL,
+  `play_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cover_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `favorite_count` bigint DEFAULT NULL,
   `comment_count` bigint DEFAULT NULL,
-  `title` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `auth_id` bigint unsigned NOT NULL,
+  `title` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_videos_deleted_at` (`deleted_at`),
   KEY `fk_videos_users1_idx` (`auth_id`),
   CONSTRAINT `fk_videos_users1` FOREIGN KEY (`auth_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=59886790136176641 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `videos`
---
-
-LOCK TABLES `videos` WRITE;
-/*!40000 ALTER TABLE `videos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `videos` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -212,4 +156,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-17 20:31:30
+-- Dump completed on 2024-01-19 16:58:19
