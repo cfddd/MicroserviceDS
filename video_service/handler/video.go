@@ -151,6 +151,7 @@ func PublishVideo() {
 	}
 	var forever chan struct{}
 	go func() {
+		logger.Log.Info("开始")
 		for d := range msgs {
 			logger.Log.Info("开始消费消息")
 			var req video_server.PublishActionRequest
@@ -181,7 +182,10 @@ func PublishVideo() {
 				// 上传视频
 				updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
 				// 获取封面,获取第几秒的封面
-				coverByte, _ := cut.Cover(videoUrl, "00:00:01")
+				coverByte, err := cut.Cover(videoUrl, "1.0")
+				if err != nil {
+					logger.Log.Error(err)
+				}
 				// 上传封面
 				updataErr = oss7.UploadFileWithByte(pictureDir, coverByte)
 				log.Print("上传成功")

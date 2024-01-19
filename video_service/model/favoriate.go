@@ -60,7 +60,7 @@ func (*FavoriteModel) DeleteFavorite(tx *gorm.DB, favorite *Favorites) error {
 	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return result.Error
 	}
-	// 如果找到了记录，更新is_favorite置为0
+	// 如果找到了记录
 	if result.RowsAffected > 0 {
 		result = tx.Delete(result.Statement.Model)
 		if result.Error != nil {
@@ -75,8 +75,8 @@ func (*FavoriteModel) DeleteFavorite(tx *gorm.DB, favorite *Favorites) error {
 func (*FavoriteModel) FavoriteVideoList(userId int64) ([]int64, error) {
 	var videoIds []int64
 
-	result := DB.Table("favorite").
-		Where("user_id = ? AND is_favorite = ?", userId, true).
+	result := DB.Table("favorites").
+		Where("user_id = ? AND deleted_at is NOT NULL", userId).
 		Pluck("video_id", &videoIds)
 	if result.Error != nil {
 		return nil, result.Error
@@ -89,7 +89,7 @@ func (*FavoriteModel) FavoriteVideoList(userId int64) ([]int64, error) {
 func (*FavoriteModel) GetFavoriteCount(userId int64) (int64, error) {
 	var count int64
 
-	DB.Table("favorite").
+	DB.Table("favorites").
 		Where("user_id=? AND deleted_at is NOT NULL", userId).
 		Count(&count)
 
