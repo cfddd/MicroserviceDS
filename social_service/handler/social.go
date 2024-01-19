@@ -2,6 +2,7 @@ package handler
 
 import (
 	"golang.org/x/net/context"
+	"log"
 	"social_service/model"
 	"social_service/pkg/redis"
 	social_pb "social_service/server"
@@ -100,14 +101,15 @@ func (s *SocialService) GetFriendList(ctx context.Context, req *social_pb.Follow
 func (s *SocialService) PostMessage(ctx context.Context, req *social_pb.PostMessageRequest) (resp *social_pb.PostMessageResponse, err error) {
 	resp = new(social_pb.PostMessageResponse)
 	message := model.Messages{
-		UserId:   req.UserId,
-		ToUserId: req.ToUserId,
-		Message:  req.Content,
+		UserId:     req.UserId,
+		FollowToID: req.ToUserId,
+		Content:    req.Content,
 	}
 	err = model.GetMessageInstance().PostMessage(message)
 	if err != nil {
 		resp.StatusCode = exception.ERROR
 		resp.StatusMsg = exception.GetMsg(exception.ERROR)
+		log.Printf("PostMessage: %v", err)
 		return resp, nil
 	}
 	resp.StatusCode = exception.SUCCESS
@@ -129,11 +131,11 @@ func (s *SocialService) GetMessage(ctx context.Context, req *social_pb.GetMessag
 
 	for _, message := range messages {
 		resp.Message = append(resp.Message, &social_pb.Message{
-			Id:        message.Id,
-			ToUserId:  message.ToUserId,
-			UserId:    message.UserId,
-			Content:   message.Message,
-			CreatedAt: message.CreatedAt.Unix(),
+			Id:         message.Id,
+			FollowToId: message.FollowToID,
+			UserId:     message.UserId,
+			Content:    message.Content,
+			CreatedAt:  message.CreatedAt.Unix(),
 		})
 	}
 	resp.StatusCode = exception.SUCCESS

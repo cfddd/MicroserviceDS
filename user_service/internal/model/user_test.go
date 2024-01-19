@@ -7,7 +7,7 @@ import (
 
 func TestUserModel_Create(t *testing.T) {
 	InitDb()
-	user := &User{
+	user := &Users{
 		Name:     "李四",
 		Password: "123456",
 	}

@@ -68,7 +68,7 @@ func GetMessage(ctx *gin.Context) {
 	for _, message := range socialResp.Message {
 		messageResp := res.Message{
 			Id:         message.Id,
-			ToUserId:   message.ToUserId,
+			ToUserId:   message.FollowToId,
 			FromUserID: message.UserId,
 			Content:    message.Content,
 			CreateTime: message.CreatedAt,
