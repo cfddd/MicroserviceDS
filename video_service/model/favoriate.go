@@ -100,7 +100,7 @@ func (*FavoriteModel) GetFavoriteCount(userId int64) (int64, error) {
 func (*FavoriteModel) GetVideoFavoriteCount(videoId int64) (int64, error) {
 	var count int64
 
-	DB.Table("favorite").
+	DB.Table("favorites").
 		Where("video_id=? AND is_favorite=?", videoId, true).
 		Count(&count)
 
@@ -111,8 +111,8 @@ func (*FavoriteModel) GetVideoFavoriteCount(videoId int64) (int64, error) {
 func (*FavoriteModel) FavoriteUserList(videoId int64) ([]int64, error) {
 	var userIds []int64
 
-	result := DB.Table("favorite").
-		Where("video_id = ? AND is_favorite = ?", videoId, true).
+	result := DB.Table("favorites").
+		Where("video_id = ? AND deleted_at is NOT NULL", videoId).
 		Pluck("user_id", &userIds)
 	if result.Error != nil {
 		return nil, result.Error
