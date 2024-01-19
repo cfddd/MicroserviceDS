@@ -256,13 +256,17 @@ func isFavorite(userId int64, videoId int64) bool {
 func buildVideoFavorite(videoId int64) error {
 	key := fmt.Sprintf("%s:%s:%s", "video", "favorite_video", strconv.FormatInt(videoId, 10))
 
-	// 查询出所有喜欢的视频
+	// 查询出所有喜欢这个视频的所有用户id
 	userIdList, err := model.GetFavoriteInstance().FavoriteUserList(videoId)
 	if err != nil {
 		return err
 	}
 
-	// 如果点赞数量为空，则不会创建cache，所以设计一个先放入，再删除，创建一个空记录。避免反复查表
+	if len(userIdList) == 0 {
+		return nil
+	}
+
+	// 如果点赞数量为空，则不走缓存
 	userIds := make([]interface{}, len(userIdList))
 	for i, video := range userIdList {
 		userIds[i] = video

@@ -62,7 +62,7 @@ func (*FavoriteModel) DeleteFavorite(tx *gorm.DB, favorite *Favorites) error {
 	}
 	// 如果找到了记录，更新is_favorite置为0
 	if result.RowsAffected > 0 {
-		result = tx.Delete(result)
+		result = tx.Delete(result.Statement.Model)
 		if result.Error != nil {
 			return result.Error
 		}
