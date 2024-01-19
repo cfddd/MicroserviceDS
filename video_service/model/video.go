@@ -45,7 +45,7 @@ func GetVideoInstance() *VideoModel {
 func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Videos, error) {
 	var videos []Videos
 
-	result := DB.Table("video").
+	result := DB.Table("videos").
 		Where("creat_at < ?", timePoint).
 		Order("creat_at DESC").
 		Limit(20).
@@ -57,7 +57,7 @@ func (*VideoModel) GetVideoByTime(timePoint time.Time) ([]Videos, error) {
 	// 查询不到数据，就返回当前时间最新的30条数据
 	if len(videos) == 0 {
 		timePoint = time.Now()
-		result := DB.Table("video").
+		result := DB.Table("videos").
 			Where("creat_at < ?", timePoint).
 			Order("creat_at DESC").
 			Limit(20).
@@ -105,7 +105,7 @@ func (v *VideoModel) DeleteVideoByID(id int64) error {
 func (*VideoModel) GetVideoListByUser(userId int64) ([]Videos, error) {
 	var videos []Videos
 
-	result := DB.Table("video").
+	result := DB.Table("videos").
 		Where("auth_id = ?", userId).
 		Find(&videos)
 	if result.Error != nil {
@@ -119,7 +119,7 @@ func (*VideoModel) GetVideoListByUser(userId int64) ([]Videos, error) {
 func (*VideoModel) GetVideoList(videoIds []int64) ([]Videos, error) {
 	var videos []Videos
 
-	result := DB.Table("video").
+	result := DB.Table("videos").
 		Where("id IN ?", videoIds).
 		Find(&videos)
 	if result.Error != nil {
@@ -132,7 +132,7 @@ func (*VideoModel) GetVideoList(videoIds []int64) ([]Videos, error) {
 // GetWorkCount 获取用户的作品数量
 func (*VideoModel) GetWorkCount(userId int64) (int64, error) {
 	var count int64
-	DB.Table("video").
+	DB.Table("videos").
 		Where("auth_id=?", userId).
 		Count(&count)
 
