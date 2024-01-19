@@ -96,8 +96,8 @@ message Message{
   int64 Id = 1;
   // @gotags:json:"user_id" form:"user_id" uri:"user_id"
   int64 UserId = 2;
-  // @gotags:json:"to_user_id" form:"to_user_id" uri:"to_user_id"
-  int64 ToUserId = 3;
+  // @gotags:json:"follow_to_id" form:"follow_to_id" uri:"follow_to_id"
+  int64 FollowToId = 3;
   // @gotags:json:"content" form:"content" uri:"content"
   string Content = 4;
   // @gotags:json:"created_at" form:"created_at" uri:"created_at"
