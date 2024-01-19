@@ -90,7 +90,7 @@ func (*FavoriteModel) GetFavoriteCount(userId int64) (int64, error) {
 	var count int64
 
 	DB.Table("favorite").
-		Where("user_id=? AND is_favorite=?", userId, true).
+		Where("user_id=? AND deleted_at is NOT NULL", userId).
 		Count(&count)
 
 	return count, nil
@@ -101,7 +101,7 @@ func (*FavoriteModel) GetVideoFavoriteCount(videoId int64) (int64, error) {
 	var count int64
 
 	DB.Table("favorites").
-		Where("video_id=? AND is_favorite=?", videoId, true).
+		Where("video_id=? AND deleted_at is NOT NULL", videoId, true).
 		Count(&count)
 
 	return count, nil
