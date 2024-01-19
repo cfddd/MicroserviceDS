@@ -7,7 +7,6 @@ import (
 	"time"
 	"video_service/config"
 	"video_service/model"
-	"video_service/pkg/db"
 )
 
 func TestCommon(t *testing.T) {
@@ -42,7 +41,7 @@ func TestRabbitMQ(t *testing.T) {
 
 func TestCreateRecord(t *testing.T) {
 	// 连接到数据库
-	db.InitDb()
+	model.InitDb()
 
 	// 创建一个 Video 实例，用于保存数据
 	video := model.Videos{
@@ -58,7 +57,7 @@ func TestCreateRecord(t *testing.T) {
 	}
 
 	// 使用 Create 方法插入数据
-	result := db.DB.Create(&video)
+	result := model.DB.Create(&video)
 	if result.Error != nil {
 		// 处理错误
 		fmt.Println(result.Error)

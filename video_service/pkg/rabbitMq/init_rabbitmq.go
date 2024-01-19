@@ -1,4 +1,4 @@
-package db
+package rabbitMq
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"

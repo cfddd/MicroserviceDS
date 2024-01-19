@@ -16,8 +16,8 @@ import (
 	"video_service/model"
 	"video_service/pkg/cache"
 	"video_service/pkg/cut"
-	"video_service/pkg/db"
 	"video_service/pkg/oss7"
+	"video_service/pkg/rabbitMq"
 	video_server "video_service/server"
 )
 
@@ -67,7 +67,7 @@ func (*VideoService) PublishAction(ctx context.Context, req *video_server.Publis
 	reqString, err := json.Marshal(&req)
 
 	// 放入消息队列
-	conn := db.InitMQ()
+	conn := rabbitMq.InitMQ()
 	// 创建通道
 	ch, err := conn.Channel()
 	if err != nil {
@@ -115,7 +115,7 @@ func (*VideoService) PublishAction(ctx context.Context, req *video_server.Publis
 
 func PublishVideo() {
 	// 放入消息队列
-	conn := db.InitMQ()
+	conn := rabbitMq.InitMQ()
 	// 创建通道
 	ch, err := conn.Channel()
 	if err != nil {
@@ -168,8 +168,8 @@ func PublishVideo() {
 			videoDir := "douyin/video/" + title + "--" + UUID.String() + ".mp4"
 			pictureDir := "douyin/cover/" + title + "--" + UUID.String() + ".jpg"
 
-			videoUrl := viper.GetString("oss.link") + videoDir
-			pictureUrl := viper.GetString("oss.link") + pictureDir
+			videoUrl := "http://" + viper.GetString("oss.link") + "/" + videoDir
+			pictureUrl := "http://" + viper.GetString("oss.link") + "/" + pictureDir
 
 			// 等待上传和创建数组库完成
 			var wg sync.WaitGroup
@@ -267,8 +267,8 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 	videoDir := "douyin/video/" + title + "--" + UUID.String() + ".mp4"
 	pictureDir := "douyin/cover/" + title + "--" + UUID.String() + ".jpg"
 
-	videoUrl := viper.GetString("oss.link") + videoDir
-	pictureUrl := viper.GetString("oss.link") + pictureDir
+	videoUrl := "http://" + viper.GetString("oss.link") + "/" + videoDir
+	pictureUrl := "http://" + viper.GetString("oss.link") + "/" + pictureDir
 
 	// 等待上传和创建数组库完成
 	var wg sync.WaitGroup
