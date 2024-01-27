@@ -7,7 +7,7 @@ import (
 	"net"
 	"user_service/internal/handler"
 	"user_service/server"
-	"utils/etcd"
+	"user_service/utils/etcd"
 )
 
 // AutoRegister etcd自动注册

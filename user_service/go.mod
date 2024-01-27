@@ -5,10 +5,7 @@ go 1.20
 require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/spf13/viper v1.18.2
-	utils v0.0.0
 )
-
-replace utils => ../utils
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

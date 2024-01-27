@@ -8,10 +8,10 @@ import (
 	"log"
 	"strconv"
 	"time"
-	utils "utils/exception"
 	"video_service/model"
 	"video_service/pkg/cache"
 	video_pb "video_service/server"
+	utils "video_service/utils/exception"
 )
 
 func (v *VideoService) CommentAction(ctx context.Context, req *video_pb.CommentActionRequest) (resp *video_pb.CommentActionResponse, err error) {

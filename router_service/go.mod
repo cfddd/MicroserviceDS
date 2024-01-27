@@ -10,10 +10,8 @@ require (
 	github.com/spf13/viper v1.18.2
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
-	utils v0.0.0-00010101000000-000000000000
 )
 
-replace utils => ../utils
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect

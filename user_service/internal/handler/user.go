@@ -10,7 +10,7 @@ import (
 	"user_service/internal/model"
 	"user_service/pkg/redis"
 	"user_service/server"
-	"utils/exception"
+	"user_service/utils/exception"
 )
 
 type UserService struct {

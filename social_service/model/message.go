@@ -1,9 +1,9 @@
 package model
 
 import (
+	"social_service/utils/snowFlake"
 	"sync"
 	"time"
-	"utils/snowFlake"
 )
 
 type Messages struct {

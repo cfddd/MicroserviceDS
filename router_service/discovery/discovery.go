@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"router_service/logger"
 	service "router_service/server"
-	"utils/etcd"
+	"router_service/utils/etcd"
 )
 
 func Resolver() map[string]interface{} {

@@ -7,7 +7,7 @@ import (
 	"net"
 	"social_service/handler"
 	social_server "social_service/server"
-	"utils/etcd"
+	"social_service/utils/etcd"
 )
 
 // AutoRegister etcd自动注册

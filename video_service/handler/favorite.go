@@ -7,10 +7,10 @@ import (
 	"log"
 	"strconv"
 	"time"
-	"utils/exception"
 	"video_service/model"
 	"video_service/pkg/cache"
 	video_server "video_service/server"
+	"video_service/utils/exception"
 )
 
 // FavoriteAction 点赞操作 todo 也可以设计成定时任务

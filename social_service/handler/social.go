@@ -6,7 +6,7 @@ import (
 	"social_service/model"
 	"social_service/pkg/redis"
 	social_pb "social_service/server"
-	"utils/exception"
+	"social_service/utils/exception"
 )
 
 type SocialService struct {

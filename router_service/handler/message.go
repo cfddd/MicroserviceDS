@@ -6,8 +6,8 @@ import (
 	"net/http"
 	res "router_service/response"
 	service "router_service/server"
+	"router_service/utils/exception"
 	"strconv"
-	"utils/exception"
 )
 
 func PostMessage(ctx *gin.Context) {

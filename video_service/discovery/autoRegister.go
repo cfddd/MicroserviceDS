@@ -5,9 +5,9 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	"utils/etcd"
 	"video_service/handler"
 	"video_service/server"
+	"video_service/utils/etcd"
 )
 
 // AutoRegister etcd自动注册

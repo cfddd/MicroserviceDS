@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"net/http"
+	"router_service/utils/exception"
 	"time"
-	"utils/exception"
 )
 
 type Claims struct {

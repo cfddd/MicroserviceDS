@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-	"utils/exception"
 	"video_service/logger"
 	"video_service/model"
 	"video_service/pkg/cache"
@@ -19,6 +18,7 @@ import (
 	"video_service/pkg/oss7"
 	"video_service/pkg/rabbitMq"
 	video_server "video_service/server"
+	"video_service/utils/exception"
 )
 
 type VideoService struct {

@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"sync"
-	"utils/snowFlake"
+	"video_service/utils/snowFlake"
 )
 
 type Favorites struct {

@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 	"sync"
 	"time"
-	"utils/snowFlake"
+	"video_service/utils/snowFlake"
 )
 
 type Comments struct {

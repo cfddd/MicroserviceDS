@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 	"user_service/pkg/encryption"
-	"utils/snowFlake"
+	"user_service/utils/snowFlake"
 )
 
 type COMMON struct {
