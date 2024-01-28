@@ -18,7 +18,7 @@ RUN go mod download
 COPY . .
 RUN go build -ldflags="-s -w" -o /app/main main.go
 # 创建一个卷用于挂载配置文件
-VOLUME /build/configs
+VOLUME /build/config
 
 FROM scratch
 
