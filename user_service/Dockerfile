@@ -3,6 +3,8 @@ FROM golang:1.20-alpine AS builder
 LABEL stage=gobuilder
 
 ENV CGO_ENABLED 0
+# 设置环境变量，确保模块的相对路径正确解析
+ENV GO111MODULE=on
 ENV GOPROXY https://goproxy.cn,direct
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
@@ -15,7 +17,8 @@ ADD go.sum .
 RUN go mod download
 COPY . .
 RUN go build -ldflags="-s -w" -o /app/main cmd/cmd/main.go
-
+# 复制本地的 configs 文件夹到容器内部的 /app 目录
+COPY ./configs/ /build/configs/
 
 FROM scratch
 
