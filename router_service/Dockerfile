@@ -18,7 +18,7 @@ COPY . .
 RUN go mod download
 RUN go build -ldflags="-s -w" -o /app/main main.go
 # 复制本地的 configs 文件夹到容器内部的 /app 目录
-COPY ./configs/ /build/configs/
+COPY ./router_service/configs/ /build/configs/
 
 FROM scratch
 
