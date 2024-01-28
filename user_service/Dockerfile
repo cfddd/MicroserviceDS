@@ -17,8 +17,8 @@ ADD go.sum .
 RUN go mod download
 COPY . .
 RUN go build -ldflags="-s -w" -o /app/main cmd/cmd/main.go
-# 复制本地的 configs 文件夹到容器内部的 /app 目录
-COPY ./user_service/configs/ /build/configs/
+# 创建一个卷用于挂载配置文件
+VOLUME /build/configs
 
 FROM scratch
 
