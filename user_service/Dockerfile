@@ -16,7 +16,7 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-RUN go build -ldflags="-s -w" -o /app/main cmd/cmd/main.go
+RUN go build -ldflags="-s -w" -o /app/main cmd/main.go
 # 创建一个卷用于挂载配置文件
 VOLUME /build/config
 
