@@ -1,3 +1,4 @@
+# 在MicroserviceDS项目根路径下运行docker命令
 docker build -t router_service_image ./router_service
 docker run -v ./router_service/configs:/build/configs --name router_service_container --network host -d router_service_image
 

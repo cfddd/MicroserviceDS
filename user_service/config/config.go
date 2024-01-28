@@ -19,15 +19,12 @@ type Config struct {
 
 // InitConfig 读取配置文件
 func InitConfig() {
-	_, file, _, _ := runtime.Caller(0)
-	currentDir := path.Dir(file)
+	_, filePath, _, _ := runtime.Caller(0)
+	currentDir := path.Dir(filePath)
+	configPath := path.Join(currentDir, "config.yaml")
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(currentDir)
-
-	err := viper.ReadInConfig()
-	if err != nil {
+	viper.SetConfigFile(configPath)
+	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
 }
