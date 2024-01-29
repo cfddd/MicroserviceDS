@@ -268,8 +268,8 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 	// 获取参数,生成地址
 	title := req.Title
 	UUID := uuid.New()
-	videoDir := "douyin/video/" + title + "--" + UUID.String() + ".mp4"
-	pictureDir := "douyin/cover/" + title + "--" + UUID.String() + ".jpg"
+	videoDir := "douyin/video/" + UUID.String() + ".mp4"
+	pictureDir := "douyin/cover/" + UUID.String() + ".jpg"
 
 	videoUrl := "http://" + viper.GetString("oss.link") + "/" + videoDir
 	pictureUrl := "http://" + viper.GetString("oss.link") + "/" + pictureDir
@@ -284,7 +284,10 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 		// 上传视频
 		updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
 		// 获取封面,获取第1.0秒的封面
-		coverByte, _ := cut.Cover(videoUrl, "00:00:01")
+		coverByte, err := cut.Cover(videoUrl, "00:00:01")
+		if err != nil {
+			logger.Log.Error(err)
+		}
 		// 上传封面
 		updataErr = oss7.UploadFileWithByte(pictureDir, coverByte)
 		logger.Log.Info("上传成功")

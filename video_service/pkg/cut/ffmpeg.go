@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
+	"video_service/logger"
 )
 
 // Cover 截取视频为图片
@@ -18,7 +19,7 @@ func Cover(videoURL string, timeOffset string) ([]byte, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		logger.Log.Error(err)
 	}
 
 	return outputBuffer.Bytes(), nil
