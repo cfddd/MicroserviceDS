@@ -6,6 +6,7 @@ ENV CGO_ENABLED 0
 # 设置环境变量，确保模块的相对路径正确解析
 ENV GO111MODULE=on
 ENV GOPROXY https://goproxy.cn,direct
+ENV ffmpeg /usr/local/ffmpeg/bin
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 RUN apk update --no-cache && apk add --no-cache tzdata
@@ -19,6 +20,7 @@ COPY . .
 RUN go build -ldflags="-s -w" -o /app/main main.go
 # 创建一个卷用于挂载配置文件
 VOLUME /build/config
+VOLUME /usr/local/ffmpeg
 
 FROM scratch
 
