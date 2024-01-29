@@ -182,7 +182,7 @@ func PublishVideo() {
 				// 上传视频
 				updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
 				// 获取封面,获取第几秒的封面
-				coverByte, err := cut.Cover(videoUrl, "1.0")
+				coverByte, err := cut.Cover(videoUrl, "00:00:01")
 				if err != nil {
 					logger.Log.Error(err)
 				}
@@ -284,7 +284,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *video_server.Publi
 		// 上传视频
 		updataErr = oss7.UploadFileWithByte(videoDir, req.Data)
 		// 获取封面,获取第1.0秒的封面
-		coverByte, _ := cut.Cover(videoUrl, "1.0")
+		coverByte, _ := cut.Cover(videoUrl, "00:00:01")
 		// 上传封面
 		updataErr = oss7.UploadFileWithByte(pictureDir, coverByte)
 		logger.Log.Info("上传成功")
