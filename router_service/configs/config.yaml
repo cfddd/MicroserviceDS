@@ -1,7 +1,7 @@
 server:
   name: router_service  # 服务名称
   port: 8999
-  address: 127.0.0.1  # 服务地址
+  address: 0.0.0.0  # 服务地址
 
 jwt:
   signing-key: 7ec8d27f-85f3-4d8c-9290-5e5fea2773f9
