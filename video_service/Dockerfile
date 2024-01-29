@@ -31,4 +31,4 @@ ENV TZ Asia/Shanghai
 WORKDIR /app
 COPY --from=builder /app/main /app/main
 
-CMD ["./main"]
+CMD ["./main","/usr/local/ffmpeg/bin/ffmpeg"]
