@@ -9,6 +9,6 @@ docker build -t user_service_image ./user_service
 docker run -v ./user_service/config:/build/config --name user_service_container --network host -d user_service_image
 
 docker build -t video_service_image ./video_service
-docker run -v ./video_service/config:/build/config -v /usr/local/ffmpeg:/usr/local/ffmpeg --name video_service_container --network host -d video_service_image
+docker run -v ./video_service/config:/build/config --name video_service_container --network host -d video_service_image
 
 # 还需要配置ffmpeg，参考https://cloud.tencent.com/developer/article/1711770
