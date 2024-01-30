@@ -7,7 +7,6 @@ LABEL stage=gobuilder
 ENV CGO_ENABLED 0
 ENV GO111MODULE=on
 ENV GOPROXY https://goproxy.cn,direct
-ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
 
 # Use Aliyun mirror for faster package installation
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
@@ -41,6 +40,7 @@ COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /usr/share/zoneinfo/Asia/S
 
 # Set timezone
 ENV TZ Asia/Shanghai
+ENV PATH="/usr/local/ffmpeg/bin:${PATH}"
 
 # Set working directory
 WORKDIR /app
