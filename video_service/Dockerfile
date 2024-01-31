@@ -27,8 +27,7 @@ FROM alpine
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /usr/share/zoneinfo/Asia/Shanghai
 #更新源，安装yasm ffmpeg
-RUN apk update
-RUN apk add yasm && apk add ffmpeg
+RUN apk add  --no-cache ffmpeg
 ENV TZ Asia/Shanghai
 
 WORKDIR /app
