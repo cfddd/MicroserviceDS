@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/viper"
 	"log"
 	"strconv"
@@ -65,94 +64,35 @@ func (v *VideoService) Feed(ctx context.Context, req *video_server.FeedRequest) 
 func (*VideoService) PublishAction(ctx context.Context, req *video_server.PublishActionRequest) (resp *video_server.PublishActionResponse, err error) {
 	resp = new(video_server.PublishActionResponse)
 	reqString, err := json.Marshal(&req)
-
-	// 放入消息队列
-	conn := rabbitMq.InitMQ()
-	// 创建通道
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Print(err)
-	}
-	defer ch.Close()
-
-	// 声明队列
-	q, err := ch.QueueDeclare(
-		"video_publish",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Print(err)
-	}
-	// 5s 后，如果没有消费则自动删除
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = ch.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{ // 发送的消息，固定有消息体和一些额外的消息头，包中提供了封装对象
-			ContentType: "application/octet-stream",
-			Body:        reqString, // 请求信息重新封装为json，加入消息队列
-		})
+	v := "video_publish"
+	// 获取新增的RM生产者和RM的生产者队列
+	rmProducer := rabbitMq.NewRMQProducer(v)
+	// 增加过期时间
+	rmProducer.RMWithTimeout(5 * time.Second)
+	// 往消息队列中存放数据
+	contentType := "application/octet-stream"
+	err = rmProducer.PublishMessage(reqString, contentType)
 	if err != nil {
 		resp.StatusCode = exception.VideoUploadErr
 		resp.StatusMsg = exception.GetMsg(exception.VideoUploadErr)
 
 		return resp, nil
 	}
-
 	resp.StatusCode = exception.SUCCESS
 	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
-
 	return resp, nil
 }
 
+// PublishVideo RMQ消费
 func PublishVideo() {
-	// 放入消息队列
-	conn := rabbitMq.InitMQ()
-	// 创建通道
-	ch, err := conn.Channel()
-	if err != nil {
-		log.Print(err)
-	}
-	defer ch.Close()
-
-	// 声明队列
-	q, err := ch.QueueDeclare(
-		"video_publish",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Print(err)
-	}
-
-	// 消费者
-	msgs, err := ch.Consume(
-		q.Name,
-		"video_service",
-		false, //手动确认
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Print(err)
-	}
-	var forever chan struct{}
+	vName := "video_publish"
+	// 获取新增的RM消费者和RM的消费者队列
+	rmConsumer := rabbitMq.NewConsumer(vName)
+	consumer := "video_service"
+	message := rmConsumer.Consume(consumer)
 	go func() {
 		logger.Log.Info("开始")
-		for d := range msgs {
+		for d := range message {
 			logger.Log.Info("开始消费消息")
 			var req video_server.PublishActionRequest
 			err := json.Unmarshal(d.Body, &req)
@@ -255,8 +195,13 @@ func PublishVideo() {
 				cache.Redis.Del(cache.Ctx, workKey)
 			}()
 		}
+		rmConsumer.Done <- nil
 	}()
-	<-forever
+	<-rmConsumer.Done
+
+	if err := rmConsumer.Close(); err != nil {
+		logger.Log.Errorf("error during shutdown: %s", err)
+	}
 }
 
 // PublishAction1 发布视频

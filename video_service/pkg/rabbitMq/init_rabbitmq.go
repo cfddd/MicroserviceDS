@@ -20,8 +20,3 @@ func InitMQ() *amqp.Connection {
 
 	return conn
 }
-
-// ConsumeMessage 消费消息
-func ConsumeMessage() {
-
-}

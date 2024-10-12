@@ -28,19 +28,21 @@ func InitRouter(serveInstance map[string]interface{}) *gin.Engine {
 		baseGroup.POST("/user/login/", handler.UserLogin)
 		baseGroup.GET("/user/", middleware.JWTMiddleware(), handler.UserInfo)
 
-		// 视频
+		// 发布视频
 		publishGroup := baseGroup.Group("/publish")
 		publishGroup.Use(middleware.JWTMiddleware())
 		{
 			publishGroup.POST("/action/", handler.PublishAction)
 			publishGroup.GET("/list/", handler.PublishList)
 		}
+		// 视频点赞
 		favoriteGroup := baseGroup.Group("/favorite")
 		favoriteGroup.Use(middleware.JWTMiddleware())
 		{
 			favoriteGroup.POST("action/", handler.FavoriteAction)
 			favoriteGroup.GET("list/", handler.FavoriteList)
 		}
+		// 视频评论
 		commentGroup := baseGroup.Group("/comment")
 		commentGroup.Use(middleware.JWTMiddleware())
 		{
@@ -56,6 +58,7 @@ func InitRouter(serveInstance map[string]interface{}) *gin.Engine {
 			relationGroup.GET("/follower/list/", handler.GetFollowerList)
 			relationGroup.GET("/friend/list/", handler.GetFriendList)
 		}
+		// 发消息
 		messageGroup := baseGroup.Group("/message")
 		messageGroup.Use(middleware.JWTMiddleware())
 		{

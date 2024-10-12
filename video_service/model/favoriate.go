@@ -16,6 +16,7 @@ type Favorites struct {
 type FavoriteModel struct {
 }
 
+// 单例模式
 var favoriteModel *FavoriteModel
 var favoriteOnce sync.Once
 
@@ -41,7 +42,7 @@ func (*FavoriteModel) AddFavorite(tx *gorm.DB, favorite *Favorites) error {
 		if result.Error != nil {
 			return result.Error
 		}
-	} else {
+	} else { // 如果没找到就创建
 		flake, _ := snowFlake.NewSnowFlake(7, 2)
 		favorite.Common.ID = flake.NextId()
 		result = tx.Create(&favorite)

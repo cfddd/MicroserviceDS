@@ -31,6 +31,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 		return nil, fmt.Errorf("缓存错误：%v", err)
 	}
 	if setExists == 0 {
+		// 构建点赞这个视频的用户集合的缓存，使用redis的set集合存储缓存
 		err := buildVideoFavorite(req.VideoId)
 		if err != nil {
 			return nil, fmt.Errorf("缓存错误：%v", err)
@@ -39,7 +40,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 
 	// 点赞操作
 	if action == 1 {
-		// 查看缓存，避免重复点赞
+		// 查看缓存的set集合中是否有这个用户的点赞记录，避免重复点赞
 		result, err := cache.Redis.SIsMember(cache.Ctx, setKey, req.UserId).Result()
 		if err != nil {
 			return nil, fmt.Errorf("缓存错误：%v", err)
@@ -52,7 +53,8 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 			return resp, err
 		}
 
-		// 操作favorite表
+		// 操作favorite（点赞）表
+		// 此处使用事务，避免出现数据库操作成功，但是缓存没有增加成功的情况？
 		tx := model.DB.Begin()
 		err = model.GetFavoriteInstance().AddFavorite(tx, &favorite)
 		if err != nil {
@@ -63,6 +65,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 		}
 
 		// 点赞成功，缓存中点赞总数 + 1
+		// 检查当前用户是否有点赞记录
 		exist, err := cache.Redis.HExists(cache.Ctx, key, strconv.FormatInt(req.UserId, 10)).Result()
 		if err != nil {
 			return nil, fmt.Errorf("缓存错误：%v", err)
@@ -70,6 +73,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 
 		if exist {
 			// 字段存在，该记录数量 + 1
+			// 如果当前用户有点赞记录，就将当前用户的点赞数缓存（哈希实现的）进行+1操作
 			_, err = cache.Redis.HIncrBy(cache.Ctx, key, strconv.FormatInt(req.UserId, 10), 1).Result()
 			if err != nil {
 				tx.Rollback()
@@ -78,6 +82,7 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 		}
 
 		// 加入喜欢set中，如果没有，构建缓存再加入set中
+		// 并且将当前点赞的视频加入的视频喜欢集合的缓存中
 		err = cache.Redis.SAdd(cache.Ctx, setKey, strconv.FormatInt(req.UserId, 10)).Err()
 		if err != nil {
 			tx.Rollback()
@@ -90,14 +95,14 @@ func (*VideoService) FavoriteAction(ctx context.Context, req *video_server.Favor
 			return nil, fmt.Errorf("缓存错误：%v", err)
 		}
 		defer func() {
-			go func() {
-				//延时3秒执行
+			go func() { // 另起协程
+				//演示双删，延时3秒执行
 				time.Sleep(time.Second * 3)
 				//再次删除缓存
 				cache.Redis.Del(cache.Ctx, favoriteKey)
 			}()
 		}()
-
+		// 提交事务
 		tx.Commit()
 	}
 
@@ -191,7 +196,7 @@ func (*VideoService) FavoriteList(ctx context.Context, req *video_server.Favorit
 			return nil, err
 		}
 	} else {
-		// 根据用户id找到所有的视频
+		// 根据用户id找到所有的视频id
 		var videoIds []int64
 		videoIds, err = model.GetFavoriteInstance().FavoriteVideoList(req.UserId)
 		if err != nil {
@@ -261,12 +266,11 @@ func buildVideoFavorite(videoId int64) error {
 	if err != nil {
 		return err
 	}
-
+	// 如果点赞数量为空，则不走缓存
 	if len(userIdList) == 0 {
 		return nil
 	}
 
-	// 如果点赞数量为空，则不走缓存
 	userIds := make([]interface{}, len(userIdList))
 	for i, video := range userIdList {
 		userIds[i] = video

@@ -22,7 +22,6 @@ func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowR
 	resp = new(social_pb.FollowResponse)
 
 	//初始化resp
-	//初始化resp
 	resp.StatusCode = exception.ERROR
 	resp.StatusMsg = exception.GetMsg(exception.ERROR)
 
@@ -33,7 +32,7 @@ func (s *SocialService) FollowAction(ctx context.Context, req *social_pb.FollowR
 		return resp, nil
 	}
 
-	err = redis.FollowAction(req.UserId, req.ToUserId, req.ActionType) //点赞操作，将信息存储在 redis 里面
+	err = redis.FollowAction(req.UserId, req.ToUserId, req.ActionType) //关注操作，将信息存储在 redis 里面
 	if err != nil {
 		return resp, err
 	}
@@ -142,6 +141,8 @@ func (s *SocialService) GetMessage(ctx context.Context, req *social_pb.GetMessag
 	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
 	return resp, nil
 }
+
+// GetFollowInfo 得到用户关注信息
 func (*SocialService) GetFollowInfo(ctx context.Context, req *social_pb.FollowInfoRequest) (resp *social_pb.FollowInfoResponse, err error) {
 	resp = new(social_pb.FollowInfoResponse)
 	for _, toUserId := range req.ToUserId {

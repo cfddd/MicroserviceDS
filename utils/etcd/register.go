@@ -15,7 +15,6 @@ type EtcdRegister struct {
 
 // CreateLease 创建租约。expire表示有效期(s)
 func (e *EtcdRegister) CreateLease(expire int64) error {
-
 	lease, err := e.etcdCli.Grant(context.Background(), expire)
 	if err != nil {
 		log.Println(err.Error())
@@ -28,26 +27,25 @@ func (e *EtcdRegister) CreateLease(expire int64) error {
 
 // BindLease 绑定租约。将租约与对应的key-value绑定
 func (e *EtcdRegister) BindLease(key string, value string) error {
-
+	// 绑定租约
 	res, err := e.etcdCli.Put(context.Background(), key, value, clientv3.WithLease(e.leaseId))
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
-
 	log.Printf("bind lease success %v \n", res)
 	return nil
 }
 
 // KeepAlive 获取续约通道 并 持续续租
 func (e *EtcdRegister) KeepAlive() error {
+	// 持续续约
 	keepAliveChan, err := e.etcdCli.KeepAlive(context.Background(), e.leaseId)
-
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
-
+	// keepAliveChan是一个只读的chan通道，监测续约通道是否成功
 	go func(keepAliveChan <-chan *clientv3.LeaseKeepAliveResponse) {
 		for {
 			select {
@@ -70,12 +68,10 @@ func (e *EtcdRegister) Close() error {
 
 // NewEtcdRegister 初始化etcd服务注册对象
 func NewEtcdRegister(etcdServerAddr string) (*EtcdRegister, error) {
-
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{etcdServerAddr},
 		DialTimeout: 3 * time.Second,
 	})
-
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
@@ -89,7 +85,6 @@ func NewEtcdRegister(etcdServerAddr string) (*EtcdRegister, error) {
 
 // ServiceRegister 服务注册。expire表示过期时间,serviceName和serviceAddr分别是服务名与服务地址
 func (e *EtcdRegister) ServiceRegister(serviceName, serviceAddr string, expire int64) (err error) {
-
 	// 创建租约
 	err = e.CreateLease(expire)
 	if err != nil {

@@ -23,7 +23,7 @@ func main() {
 	}
 	err := server.ListenAndServe()
 	if err != nil {
-		logger.Log.Fatal("启动失败...")
+		logger.Log.Warnln("启动失败...")
 	}
 
 }

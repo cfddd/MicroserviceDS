@@ -21,7 +21,7 @@ func NewUserService() *UserService {
 	return &UserService{}
 }
 
-// 用户注册
+// UserRegister 用户注册
 func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (resp *server.UserResponse, err error) {
 	resp = new(server.UserResponse)
 	var user model.Users
@@ -62,7 +62,7 @@ func (*UserService) UserRegister(ctx context.Context, req *server.UserRequest) (
 	}
 }
 
-// 用户登录
+// UserLogin 用户登录
 func (*UserService) UserLogin(ctx context.Context, req *server.UserRequest) (resp *server.UserResponse, err error) {
 	resp = new(server.UserResponse)
 
@@ -97,7 +97,7 @@ func RespUser(u *model.Users) *server.User {
 	return &user
 }
 
-// 查询用户信息
+// UserInfo 查询用户信息
 func (*UserService) UserInfo(ctx context.Context, req *server.UserInfoRequest) (resp *server.UserInfoResponse, err error) {
 	resp = new(server.UserInfoResponse)
 

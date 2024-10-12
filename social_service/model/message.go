@@ -38,6 +38,8 @@ func (m *MessageModel) PostMessage(message Messages) error {
 }
 
 func (m *MessageModel) GetMessage(uId, tId, preMsgTime int64, messages *[]Messages) error {
+	// time.Unix() 函数是一个十分实用的函数，它可以将Unix时间戳转换为时间类型。
+	// Unix时间戳是一种表示时间的方式，它表示从1970年1月1日UTC（协调世界时）零点开始的秒数。
 	time := time.Unix(preMsgTime, 0)
 	err := DB.Model(&Messages{}).Where("user_id + follow_to_id = ? and created_at > ? ", uId+tId, time).Find(messages).Error
 	return err

@@ -25,7 +25,7 @@ func InitBucket() {
 	QiniuClient.secretKey = viper.GetString("oss.secretKey")
 }
 
-// UploadFile 上传文件
+// UploadFile 上传文件，使用文件分片上传
 // localFile 本地文件路径，相对当前包路径
 // key 目的文件路径
 func UploadFile(localFile, key string) (err error) {
@@ -84,6 +84,7 @@ func UploadFileWithByte(key string, localFile []byte) (err error) {
 	return err
 }
 
+// GetFileUrl 生成私有空间文件下载的 URL
 func GetFileUrl(key string) string {
 	mac := auth.New(QiniuClient.accessKey, QiniuClient.secretKey)
 	domain := "http://douyin.cfddfc.online"

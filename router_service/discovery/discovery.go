@@ -12,7 +12,7 @@ import (
 
 func Resolver() map[string]interface{} {
 	instance := make(map[string]interface{})
-
+	// 配置etcd地址，新建etcd服务发现
 	etcdAddress := viper.GetString("etcd.address")
 	serviceDiscovery, err := etcd.NewServiceDiscovery([]string{etcdAddress})
 
@@ -30,7 +30,7 @@ func Resolver() map[string]interface{} {
 	userServiceAddr, _ := serviceDiscovery.GetService("user_service")
 	userConn, err := grpc.Dial(userServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		fmt.Println("获取视频服务实例出错")
+		fmt.Println("获取用户服务实例出错")
 		logger.Log.Fatal(err)
 	}
 	userClient := service.NewUserServiceClient(userConn)

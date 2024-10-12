@@ -68,7 +68,7 @@ func (e *EtcdDiscovery) ServiceDiscovery(prefix string) error {
 
 // SetService 新增或修改本地服务
 func (s *EtcdDiscovery) putService(key, val string) {
-	s.lock.Lock()
+	s.lock.Lock() // 加锁是因为会有多个go程调用这个函数，为了保证原子性，所以加锁
 	s.serviceMap[key] = val
 	s.lock.Unlock()
 	log.Println("put key :", key, "val:", val)

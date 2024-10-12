@@ -11,14 +11,14 @@ import (
 func ErrorMiddleWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
-			r := recover()
+			r := recover() // 捕获panic报错
 			if r != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"status_code": exception.ERROR,
 					// 打印具体错误
 					"status_msg": fmt.Sprintf("%s", r),
 				})
-				// 中断
+				// 中断后续的中间件和处理函数的执行。这意味着当捕获到 panic 并返回错误响应后，Gin 将不再继续处理该请求。
 				c.Abort()
 			}
 		}()
